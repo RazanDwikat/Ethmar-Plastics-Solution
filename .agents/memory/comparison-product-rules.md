@@ -20,3 +20,9 @@ The clean demo must show E-01/E-02 scrap rates of 5%/10%, a 5-percentage-point d
 **Why:** These are the user's explicit acceptance case and missing-attribute demonstration.
 
 **How to apply:** Group runs by the mapped run ID, or order ID when chosen during mapping if no run column is mapped. Include a second demo with one duplicate and one missing row.
+
+Build one phase at a time and stop after each phase, explain how to try it, and wait for user approval before starting the next. The user requested design-only work first.
+
+**Why:** The user explicitly added approval gates to the agreed phased approach.
+
+**How to apply:** Keep mapping, data checks, and comparison/evidence as separately approved phases. The clean demo's 45-minute downtime must be outside changeover. Demo 2 duplicates E-01 scrap and omits E-02 material input; demo 3 includes a conflicting event ID with a different quantity and downtime overlapping changeover. In the comparison phase, add a plain-language summary of which run had more waste, whether its mold change was longer, and its separate downtime, using clear units such as 6 h and 45 min.
