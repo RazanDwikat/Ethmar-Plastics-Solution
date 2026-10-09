@@ -26,3 +26,9 @@ Build one phase at a time and stop after each phase, explain how to try it, and 
 **Why:** The user explicitly added approval gates to the agreed phased approach.
 
 **How to apply:** Keep mapping, data checks, and comparison/evidence as separately approved phases. The clean demo's 45-minute downtime must be outside changeover. Demo 2 duplicates E-01 scrap and omits E-02 material input; demo 3 includes a conflicting event ID with a different quantity and downtime overlapping changeover. In the comparison phase, add a plain-language summary of which run had more waste, whether its mold change was longer, and its separate downtime, using clear units such as 6 h and 45 min.
+
+Unmapped CSV columns remain in original source rows and may become named custom fields. Users choose evidence/source-only visibility or also comparison-attribute use; differing comparison values trigger nonblocking “compare with care” notices. Save custom-field choices in mapping profiles.
+
+**Why:** The user explicitly requested extensible contextual fields without causal implications or loss of raw columns.
+
+**How to apply:** Keep display names separate from source column names, preserve values when definitions are removed, and never treat a custom attribute difference as a cause.
