@@ -1,0 +1,45 @@
+.ethmar.ep2 .p2-source { display: grid; grid-template-columns: minmax(230px, 1fr) 1.2fr; gap: 24px; align-items: center; }
+.ethmar.ep2 .p2-setup { border-left: 1px solid var(--line); padding-left: 24px; font-size: 11px; color: var(--muted); }
+.ethmar.ep2 .p2-setup strong { display: block; margin-bottom: 5px; color: var(--ink); font-weight: 500; }
+.ethmar.ep2 .p2-run-head { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin: 25px 0 15px; }
+.ethmar.ep2 .p2-run-head p { margin-top: 4px; }
+.ethmar.ep2 .p2-metrics { display: grid; grid-template-columns: 1fr 1fr; margin-bottom: 20px; }
+.ethmar.ep2 .p2-metric { padding: 20px 23px; border-bottom: 1px solid var(--line); min-height: 122px; }
+.ethmar.ep2 .p2-metric:nth-child(odd) { border-right: 1px solid var(--line); }
+.ethmar.ep2 .p2-metric:nth-last-child(-n+2) { border-bottom: 0; }
+.ethmar.ep2 .p2-value { font-family: 'Space Mono', monospace; font-size: 27px; letter-spacing: -1px; margin: 8px 0 4px; line-height: 1.25; }
+.ethmar.ep2 .p2-value small { font: 12px 'DM Sans', sans-serif; letter-spacing: 0; color: var(--muted); }
+.ethmar.ep2 .p2-value.unavailable { font-family: 'Outfit', sans-serif; font-size: 22px; letter-spacing: -.3px; color: var(--copper); }
+.ethmar.ep2 .p2-metric.blocked { background: #f5ede3; }
+.ethmar.ep2 .p2-status { font-size: 11px; padding: 5px 9px; background: var(--wash); color: var(--teal); border-radius: 4px; }
+.ethmar.ep2 .p2-status.warning { color: #885034; background: #f2e7d9; }
+.ethmar.ep2 .p2-status.blocking { color: #943f30; background: #f3e2d9; }
+.ethmar.ep2 .p2-balance { display: flex; align-items: flex-start; gap: 11px; padding: 15px 20px; background: #edf0e8; margin-bottom: 23px; border: 1px solid var(--line); border-radius: 6px; font-size: 12px; }
+.ethmar.ep2 .p2-balance p { margin-top: 3px; color: var(--muted); }
+.ethmar.ep2 .p2-filters { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.ethmar.ep2 .p2-filters .ep-btn { padding: 7px 11px; }
+.ethmar.ep2 .p2-issue { padding: 19px 21px; }
+.ethmar.ep2 .p2-issue h3 { margin: 10px 0 6px; }
+.ethmar.ep2 .p2-issue p { max-width: 760px; font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+.ethmar.ep2 .p2-issue-meta { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ethmar.ep2 .p2-none { padding: 23px; display: flex; gap: 12px; align-items: flex-start; }
+.ethmar.ep2 .p2-none p { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.ethmar.ep2 .p2-rules { margin-top: 20px; }
+.ethmar.ep2 .p2-rules ul { padding-left: 18px; margin: 0; font-size: 12px; color: var(--muted); }
+.ethmar.ep2 .p2-rules li + li { margin-top: 8px; }
+.ethmar.ep2 .p2-link { color: var(--teal); text-underline-offset: 4px; font-size: 12px; }
+.ethmar.ep2 a:focus-visible, .ethmar.ep2 [tabindex]:focus-visible { outline: 3px solid #bd8c61; outline-offset: 3px; }
+.ethmar.ep2 .ep-step .p2-status { margin-left: auto; font-size: 9px; padding: 3px 5px; white-space: nowrap; }
+.ethmar.ep2 .ep-table-foot { flex-wrap: wrap; }
+.ethmar.ep2 .p2-file { overflow-wrap: anywhere; }
+@media(max-width: 767px) {
+  .ethmar.ep2 .p2-source, .ethmar.ep2 .p2-metrics { grid-template-columns: 1fr; }
+  .ethmar.ep2 .p2-setup { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 14px; }
+  .ethmar.ep2 .p2-metric:nth-child(odd) { border-right: 0; }
+  .ethmar.ep2 .p2-metric:nth-last-child(2) { border-bottom: 1px solid var(--line); }
+  .ethmar.ep2 .ep-sidebar nav { flex-wrap: wrap; }
+  .ethmar.ep2 .ep-step { flex: 1; min-width: 140px; }
+  .ethmar.ep2 .ep-step strong { font-size: 13px; }
+  .ethmar.ep2 .ep-panel-head { flex-wrap: wrap; }
+  .ethmar.ep2 .p2-run-head { flex-wrap: wrap; }
+}
