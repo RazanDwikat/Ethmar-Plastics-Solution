@@ -38,3 +38,9 @@ Custom-field definition controls belong in Phase 1's mapping step only. Phase 3 
 **Why:** The user explicitly located field definition in the analyst's mapping workflow and requested its removal from comparison.
 
 **How to apply:** Include custom choices in complete mapping-profile snapshots and make the prototype handoff explicit; do not imply that shared custom context turns fixed demo metrics into a configurable calculation engine.
+
+Similar-run suggestions are optional shortcuts, never restrictions: rank up to five by count of matching mapped line, mold, machine, input within tolerance and custom comparison attributes, then date proximity. Expose matching reasons and unassessed checks, retain blocking-issue badges, and allow selection from the full run list.
+
+**Why:** The user requested transparent rule-based suggestions, no AI or hidden scoring, and no causal claims.
+
+**How to apply:** Keep search/filter controls independent from suggestions and show “Cannot calculate” for blocked summaries rather than guessed values.

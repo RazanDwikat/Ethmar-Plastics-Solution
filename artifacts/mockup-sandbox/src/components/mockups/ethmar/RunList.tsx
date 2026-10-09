@@ -1,0 +1,40 @@
+import { useState } from 'react';
+
+export type RunRecord = { id:string; date:string; line:string; machine:string; mold:string; shift:string; order:string; rate:number|null; changeover:number|null; issues:string[]; blocking:boolean };
+export type MatchCheck = { label:string; state:'match'|'different'|'unassessed'; text:string };
+type Props = { runs:RunRecord[]; baseline:string; compared:string; pick:(id:string,role:'baseline'|'compared')=>void; checks:(a:string,b:string)=>MatchCheck[]; custom:{column:string;name:string;compare:boolean}[]; values:(column:string,run:string)=>string[] };
+export function RunList({runs,baseline,compared,pick,checks,custom,values}:Props){
+  const [search,setSearch]=useState('');
+  const [filters,setFilters]=useState<Record<string,string>>({});
+  const [showFilters,setShowFilters]=useState(false);
+  const [sort,setSort]=useState<{key:string;asc:boolean}>({key:'date',asc:false});
+  const base=runs.find(r=>r.id===baseline)!;
+  const reset=()=>{setSearch('');setFilters({});};
+  const attrs=[['line','Line'],['machine','Machine'],['mold','Mold'],['shift','Shift'],['order','Order'],...custom.map(f=>[`custom:${f.column}`,f.name])];
+  const get=(r:RunRecord,k:string):string=>k.startsWith('custom:')?values(k.slice(7),r.id).join(' · '):String(r[k as keyof RunRecord]??'');
+  const shown=runs.filter(r=>{
+    if(search&&!`${Object.values(r).join(' ')} ${custom.map(f=>values(f.column,r.id).join(' ')).join(' ')}`.toLowerCase().includes(search.toLowerCase()))return false;
+    return Object.entries(filters).every(([k,v])=>!v||(k==='from'?r.date>=v:k==='to'?r.date<=v:k.startsWith('custom:')?values(k.slice(7),r.id).includes(v):get(r,k)===v));
+  }).sort((a,b)=>{
+    const av=sort.key==='issues'?a.issues.length:sort.key==='rate'?a.rate:sort.key==='changeover'?a.changeover:get(a,sort.key);
+    const bv=sort.key==='issues'?b.issues.length:sort.key==='rate'?b.rate:sort.key==='changeover'?b.changeover:get(b,sort.key);
+    if(av===null)return bv===null?0:1;if(bv===null)return -1;
+    return (typeof av==='number'&&typeof bv==='number'?av-bv:String(av).localeCompare(String(bv)))*(sort.asc?1:-1);
+  });
+  const suggestions=runs.filter(r=>r.id!==baseline).map(r=>({r,checks:checks(baseline,r.id)})).map(s=>({...s,matches:s.checks.filter(c=>c.state==='match').length,distance:Math.abs(Date.parse(s.r.date)-Date.parse(base.date))})).sort((a,b)=>b.matches-a.matches||a.distance-b.distance||a.r.id.localeCompare(b.r.id)).slice(0,5);
+  const same=suggestions.filter(s=>s.checks.some(c=>c.label==='Line'&&c.state==='match')&&s.checks.some(c=>c.label==='Mold'&&c.state==='match')).length;
+  const columns=[['id','Run'],['date','Date'],['line','Line'],['machine','Machine'],['mold','Mold'],['shift','Shift'],['order','Order'],['rate','Scrap rate'],['changeover','Changeover'],['issues','Issues'],...custom.map(f=>[`custom:${f.column}`,f.name])];
+  return <>
+    <section className="ep-panel run-workbench"><div className="ep-panel-head"><div><div className="ep-eyebrow">Choose from the import</div><h2>Run library</h2></div><span className="ep-tag">{runs.length} runs · all available</span></div><div className="ep-panel-body">
+      <div className="run-toolbar"><label className="ep-field">Search runs<input value={search} placeholder="Run, order, attribute…" onChange={e=>setSearch(e.target.value)}/></label><button className="ep-btn" aria-expanded={showFilters} onClick={()=>setShowFilters(!showFilters)}>Filters {Object.values(filters).filter(Boolean).length>0?`(${Object.values(filters).filter(Boolean).length})`:''}</button><button className="ep-btn" onClick={reset}>Clear filters</button></div>
+      {showFilters&&<div className="run-filters"><label className="ep-field">From date<input type="date" value={filters.from||''} onChange={e=>setFilters({...filters,from:e.target.value})}/></label><label className="ep-field">Through date<input type="date" value={filters.to||''} onChange={e=>setFilters({...filters,to:e.target.value})}/></label>{attrs.map(([key,label])=><label className="ep-field" key={key}>{label}<select value={filters[key]||''} onChange={e=>setFilters({...filters,[key]:e.target.value})}><option value="">All values</option>{[...new Set(runs.flatMap(r=>key.startsWith('custom:')?values(key.slice(7),r.id):[get(r,key)]))].filter(Boolean).sort().map(v=><option key={v}>{v}</option>)}</select></label>)}{custom.length===0&&<p className="ep-small">Custom-field filters appear after saving definitions in Phase 1.</p>}</div>}
+      <div className="run-count" role="status">{shown.length} of {runs.length} runs shown. Filters never change your selected pair. Suggestions never filter this list.</div>
+      <div className="p3-result-scroll"><table className="run-table"><thead><tr>{columns.map(([key,label])=><th key={key} aria-sort={sort.key===key?(sort.asc?'ascending':'descending'):'none'}><button onClick={()=>setSort({key,asc:sort.key===key?!sort.asc:true})}>{label} {sort.key===key?(sort.asc?'↑':'↓'):'↕'}</button></th>)}<th>Choose role</th></tr></thead><tbody>{shown.map(r=><tr key={r.id} className={r.id===baseline||r.id===compared?'run-picked':''}>{columns.map(([key])=><td key={key}>{key==='rate'?(r.rate===null?'Cannot calculate':`${Number(r.rate.toFixed(2))}%`):key==='changeover'?(r.changeover===null?'Cannot calculate':`${r.changeover} h`):key==='issues'?<><span className={r.blocking?'run-status blocked':r.issues.length?'run-status':''}>{r.issues.length} {r.blocking?'· Blocked metrics':''}</span>{r.issues.map(i=><small key={i}>{i}</small>)}</>:get(r,key)||'Not provided'}</td>)}<td><div style={{display:'flex',gap:6}}><button className={`ep-btn ${r.id===baseline?'primary':''}`} aria-pressed={r.id===baseline} onClick={()=>pick(r.id,'baseline')}>Baseline</button><button className={`ep-btn ${r.id===compared?'primary':''}`} aria-pressed={r.id===compared} onClick={()=>pick(r.id,'compared')}>Compare</button></div></td></tr>)}</tbody></table></div>
+      {shown.length===0&&<div className="run-empty"><h3>No runs match these filters.</h3><p>Your import and selected pair are unchanged.</p><button className="ep-btn" onClick={reset}>Show all runs</button></div>}
+      <div className="run-picks"><span><small>Baseline</small><strong>{baseline}</strong> · {base.date}</span><span><small>Compared run</small><strong>{compared}</strong> · {runs.find(r=>r.id===compared)?.date}</span></div><p className="ep-small">Pick any two distinct runs. Choosing the other selected run swaps their roles.</p>
+    </div></section>
+    <section className="ep-panel run-suggestions"><div className="ep-panel-head"><div><div className="ep-eyebrow">Shortcuts, not explanations</div><h2>Similar runs to {baseline}</h2></div><span className="ep-tag">{same} on the same line and mold</span></div><div className="ep-panel-body">{suggestions.map(({r,checks:items,matches})=><div className="run-suggestion" key={r.id}><div><strong>{r.id}</strong> <span className="ep-small">· {r.date} · {matches} matching attributes</span> {r.blocking&&<span className="run-status blocked">Blocking data issue</span>}<p>{items.filter(c=>c.state==='match').map(c=>c.text).join(' · ')||'No assessed attributes match.'}</p>{items.filter(c=>c.state==='different').length>0&&<small>Different: {items.filter(c=>c.state==='different').map(c=>c.text).join(' · ')}</small>}{items.filter(c=>c.state==='unassessed').length>0&&<small>Not assessed: {items.filter(c=>c.state==='unassessed').map(c=>c.text).join(' · ')}</small>}</div><button className="ep-btn" onClick={()=>pick(r.id,'compared')}>{compared===r.id?'Selected':'Compare this run'}</button></div>)}
+      <details className="run-help"><summary>How suggestions work</summary><p>Up to 5 other runs, ranked by the number of matching mapped attributes: line, mold, machine, input within tolerance, and each custom comparison field. Then by closest run date; remaining ties use run ID. Unmapped, missing, ambiguous or blocked values earn no match. No AI, weights or hidden scoring. Suggestions include runs with issues and ignore list filters; every run remains selectable. Similarity does not explain or establish causation.</p></details>
+    </div></section>
+  </>;
+}
