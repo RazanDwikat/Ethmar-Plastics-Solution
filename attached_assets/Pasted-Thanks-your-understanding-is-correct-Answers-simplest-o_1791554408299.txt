@@ -1,0 +1,51 @@
+Thanks, your understanding is correct. Answers (simplest option that meets the brief):
+
+1. Run definition: a run is the group of event rows sharing the same value in the
+   column mapped as "run ID" (e.g. E-01). If no run column is mapped, fall back to
+   the order ID. The user chooses this during column mapping.
+
+2. Demo CSV: one event per row. Event types: MATERIAL_IN, GOOD_OUT, SCRAP,
+   CHANGEOVER, DOWNTIME_UNPLANNED. Columns: event_id, order_id, run_id, machine,
+   mold, shift, event_type, start_time, end_time, quantity_kg. Include the E-01/E-02
+   numbers from the brief, plus a second demo file containing one duplicate row and
+   one missing row to test warnings.
+
+3. Data issues, two levels:
+   - Blocking: a required value is missing (e.g. no MATERIAL_IN row, so the scrap
+     rate cannot be calculated). Show "cannot calculate" and explain why.
+   - Warning: result is still shown but flagged (duplicate row, good + scrap does not
+     equal input, overlapping times).
+   Duplicates: count the event once, show both rows, and flag it. Never edit or
+   delete anything silently.
+
+4. Changeover vs downtime: always shown as separate numbers. Never add, subtract or
+   merge them automatically. If their time ranges overlap, show a visible warning
+   with both rows and do not guess how to resolve it.
+
+5. Comparability: any two runs can be compared. Show a "compare with care" notice
+   when line, input quantity (beyond a configurable tolerance), mold, machine or
+   product differ. It never blocks the comparison. No claims about causation;
+   any explanation is labeled a hypothesis.
+
+6. Evidence panel for any displayed number: the formula with actual values, the
+   source rows used (CSV line number plus original unchanged values), the column
+   mapping that interpreted them, and any excluded rows with the reason.
+   "Original" means the uploaded CSV as imported, kept unchanged.
+
+7. Configurable in the MVP:
+   - column mapping, saved as a reusable profile
+   - which values in the event-type column mean scrap, good output, material in,
+     changeover, downtime
+   - metric definitions chosen from a few templates: ratio (sum of type A / sum of
+     type B), duration (sum of end - start for a type), total (sum of quantity)
+   - comparability tolerance
+   Not in scope: a free-form formula language.
+
+8. Usage: no login. The user uploads a CSV or loads the built-in demo, completes
+   mapping once, and the mapping profile and uploaded file are saved so they persist
+   across sessions. The comparison view can be exported as CSV or a printable page.
+
+Now go back to your steps: restate the final understanding briefly, list any
+remaining open questions (max 3), and if none remain, propose a build plan in
+phases (mapping, then data checks, then comparison and evidence panel). Do not
+write code until I approve the plan.
