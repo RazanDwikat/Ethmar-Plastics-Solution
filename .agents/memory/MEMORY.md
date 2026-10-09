@@ -1,0 +1,1 @@
+- [Comparison product rules](comparison-product-rules.md) — Ethmar MVP scope, evidence integrity, duplicate policy, and local-only persistence.
