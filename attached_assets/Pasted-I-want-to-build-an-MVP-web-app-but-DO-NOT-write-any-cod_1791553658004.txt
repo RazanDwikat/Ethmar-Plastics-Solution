@@ -1,0 +1,50 @@
+I want to build an MVP web app, but DO NOT write any code or create any files yet.
+First I want us to understand the problem together. Read the brief below, then:
+1) restate the problem in your own words,
+2) list what is known vs. what is assumed,
+3) ask me your questions (max 8, most important first).
+Wait for my answers before proposing anything.
+
+## Context
+Ethmar Plastics is a plastic packaging factory. It already records production in an
+ERP system. Management struggles to compare production runs because they would have
+to dig through raw spreadsheets. We need a simple, checkable comparison tool built
+on top of approved ERP exports.
+
+## The case (the tool must reproduce these exact results)
+Two production runs on the same line, same material input:
+- Run E-01: 1,000 kg input -> 950 kg good + 50 kg scrap; mold change 4 hours.
+- Run E-02: 1,000 kg input -> 900 kg good + 100 kg scrap; mold change 6 hours.
+  E-02 also has 45 minutes of separately logged unplanned downtime.
+
+Expected output:
+- Scrap rate = scrap / material input: E-01 = 5%, E-02 = 10%.
+- E-02 scrap is 5 percentage points higher; its mold change is 2 hours longer.
+- The 45-minute downtime is shown separately from the 6-hour changeover.
+- The tool must NOT claim causation. Any possible explanation is labeled a hypothesis.
+
+## Users
+- Production manager: compares two runs and checks numbers.
+- Analyst/intern: loads approved CSV exports and defines what each column means.
+- Factory owner: wants to match every displayed number to the original export.
+
+## Data
+Approved ERP/production CSV exports, event-based rows with IDs for order, machine,
+mold, shift and event. I do NOT have the real file format, so the tool must let the
+user map CSV columns to meanings (column mapping), and I will use demo data.
+
+## Hard requirements
+1. Read-only: never changes the original system or the uploaded rows.
+2. Traceability: every displayed number can open the original source rows behind it.
+3. Data issues (missing, duplicated rows, good + scrap != input, overlapping times)
+   are shown as visible warnings, never hidden or silently fixed.
+4. Unplanned downtime is never silently merged into changeover time.
+5. Calculations must be simple and verifiable by a non-technical person.
+6. Generic by design: metrics and event types should be configurable, not hardcoded
+   to plastics, so it could serve other factories later.
+
+## Out of scope for the MVP
+No live ERP connection, no login system, no writing back to the ERP.
+AI explanations are optional and come last.
+
+Start with step 1-3 above. Do not build yet.
