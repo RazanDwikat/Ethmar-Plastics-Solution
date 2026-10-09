@@ -32,3 +32,9 @@ Unmapped CSV columns remain in original source rows and may become named custom 
 **Why:** The user explicitly requested extensible contextual fields without causal implications or loss of raw columns.
 
 **How to apply:** Keep display names separate from source column names, preserve values when definitions are removed, and never treat a custom attribute difference as a cause.
+
+Custom-field definition controls belong in Phase 1's mapping step only. Phase 3 consumes saved choices and displays comparison attributes, evidence and nonblocking notices; it must not own definition controls.
+
+**Why:** The user explicitly located field definition in the analyst's mapping workflow and requested its removal from comparison.
+
+**How to apply:** Include custom choices in complete mapping-profile snapshots and make the prototype handoff explicit; do not imply that shared custom context turns fixed demo metrics into a configurable calculation engine.

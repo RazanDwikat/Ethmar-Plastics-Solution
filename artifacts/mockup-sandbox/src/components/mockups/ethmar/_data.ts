@@ -20,7 +20,9 @@ export const demos = [
 export const mappingFields = [
   ['Event ID', 'event_id'], ['Order ID', 'order_id'], ['Run ID', 'run_id'], ['Machine', 'machine'], ['Mold', 'mold'], ['Shift', 'shift'], ['Event type', 'event_type'], ['Start time', 'start_time'], ['End time', 'end_time'], ['Quantity · kg', 'quantity_kg'], ['Line · optional', 'line'], ['Product · optional', 'product'],
 ];
+export type CustomField = { column: string; name: string; compare: boolean };
 export type Configuration = {
+  customFields: CustomField[];
   mapping: Record<string, string>;
   grouping: string;
   events: Record<string, string>;
@@ -35,6 +37,7 @@ export type Configuration = {
   tolerance: string;
 };
 export const initialConfiguration: Configuration = {
+  customFields: [],
   mapping: Object.fromEntries(mappingFields.map(([, key]) => [key, key === 'product' ? '' : key])),
   grouping: 'run_id',
   events: Object.fromEntries(eventTypes.map(type => [type, type])),

@@ -1,0 +1,4 @@
+.ethmar .ep-custom-row{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:16px 0;border-bottom:1px solid var(--line)}
+.ethmar .ep-custom-definition{display:grid;grid-template-columns:1fr 1.3fr auto;gap:18px;align-items:end;padding:18px;background:var(--wash);border:1px solid var(--line);border-radius:6px;margin:16px 0}
+.ethmar .ep-custom-help{margin:14px 0}
+@media(max-width:767px){.ethmar .ep-custom-definition{grid-template-columns:1fr}.ethmar .ep-custom-row{align-items:flex-start;flex-direction:column}}
