@@ -1,0 +1,83 @@
+import { useState, useRef } from 'react';
+import { ArrowUpRight, FileDown, Printer, Info, ScanLine, Check, ShieldAlert } from 'lucide-react';
+import { demos, headers } from './_data';
+import './_group.css';
+import './PhaseThree.css';
+
+type Run = 'E-01' | 'E-02';
+type Metric = 'input' | 'good' | 'scrap' | 'rate' | 'changeover' | 'downtime';
+const metrics: { key: Metric; label: string; unit: string; types: string[] }[] = [
+  { key: 'input', label: 'Material input', unit: 'kg', types: ['MATERIAL_IN'] },
+  { key: 'good', label: 'Good output', unit: 'kg', types: ['GOOD_OUT'] },
+  { key: 'scrap', label: 'Scrap quantity', unit: 'kg', types: ['SCRAP'] },
+  { key: 'rate', label: 'Scrap rate', unit: '%', types: ['SCRAP', 'MATERIAL_IN'] },
+  { key: 'changeover', label: 'Mold change', unit: 'h', types: ['CHANGEOVER'] },
+  { key: 'downtime', label: 'Unplanned downtime', unit: 'min', types: ['DOWNTIME_UNPLANNED'] },
+];
+const mapping = { 'Run ID': 'run_id', 'Event ID': 'event_id', 'Event type': 'event_type', 'Quantity (kg)': 'quantity_kg', 'Start': 'start_time', 'End': 'end_time', 'Machine': 'machine', 'Mold': 'mold', 'Line': 'line', 'Product': 'Unmapped' };
+export function PhaseThree() {
+  const [demo, setDemo] = useState(0);
+  const [left, setLeft] = useState<Run>('E-01');
+  const [right, setRight] = useState<Run>('E-02');
+  const [tolerance, setTolerance] = useState('0');
+  const [selected, setSelected] = useState<{metric: Metric; scope: Run | 'difference'}>({metric:'rate',scope:'difference'});
+  const [notice, setNotice] = useState('');
+  const evidence = useRef<HTMLElement>(null);
+  const data = demos[demo];
+  const source = data.rows.map((cells,index)=>({cells,line:index+2}));
+  const value = (run: Run, key: Metric): number | null => {
+    if (demo === 1 && run === 'E-02' && ['input','rate'].includes(key)) return null;
+    if (demo === 2 && run === 'E-01' && ['scrap','rate'].includes(key)) return null;
+    const values = run === 'E-01' ? {input:1000,good:950,scrap:50,rate:5,changeover:4,downtime:null} : {input:1000,good:900,scrap:100,rate:10,changeover:6,downtime:45};
+    return values[key];
+  };
+  const reason = (run: Run,key: Metric) => key === 'downtime' && run === 'E-01' ? 'No downtime event is logged; this is not zero.' : demo === 1 && run === 'E-02' ? 'Missing MATERIAL_IN row. No input is inferred.' : 'EV-003 has conflicting quantities of 50 kg and 65 kg. No winner is selected.';
+  const format = (run:Run,key:Metric) => { const n=value(run,key);return n===null ? key==='downtime' && run==='E-01' ? 'Not logged' : 'Cannot calculate' : `${n.toLocaleString('en-US')}${key==='rate'?'%':` ${metrics.find(m=>m.key===key)!.unit}`}`; };
+  const difference = (key:Metric) => {const a=value(left,key),b=value(right,key);return a===null||b===null?null:b-a;};
+  const diffText = (key:Metric) => {const n=difference(key);return n===null?'Cannot calculate':`${n>0?'+':''}${n.toLocaleString('en-US')} ${key==='rate'?'pp':metrics.find(m=>m.key===key)!.unit}`;};
+  const warnings = demo===0?[]:demo===1?['E-01 · Duplicate EV-003 counted once. CSV line 5 excluded; both originals retained.','E-02 · Missing material input blocks input-dependent metrics.']:['E-01 · Conflicting EV-003 blocks scrap quantity and scrap rate.','E-02 · Downtime overlaps mold change. Both intervals remain unchanged and separate.'];
+  const unavailable = difference('rate')===null;
+  const higher = (value(left,'rate')??0)>(value(right,'rate')??0)?left:right;
+  const summary = unavailable ? 'Waste cannot be compared reliably in this demo.' : `${higher} had more waste. Its mold change was also longer.`;
+  const metric = metrics.find(m=>m.key===selected.metric)!;
+  const runs = selected.scope==='difference'?[left,right]:[selected.scope];
+  const relevant = source.filter(row=>runs.includes(row.cells[2] as Run)&&metric.types.includes(row.cells[6]));
+  const excluded = relevant.filter(row=>demo===1&&row.cells[0]==='EV-003'&&row.line===5);
+  const unresolved = relevant.filter(row=>demo===2&&row.cells[0]==='EV-003');
+  const included = relevant.filter(row=>!excluded.includes(row)&&!unresolved.includes(row));
+  const formula = (run:Run) => {
+    if(value(run,metric.key)===null)return `${run}: ${reason(run,metric.key)}`;
+    if(metric.key==='rate')return `${run}: ${value(run,'scrap')} kg ÷ ${value(run,'input')} kg × 100 = ${format(run,'rate')}`;
+    if(metric.key==='changeover')return `${run}: ${run==='E-01'?'10:00 − 06:00 = 240 min ÷ 60 = 4 h':'12:00 − 06:00 = 360 min ÷ 60 = 6 h'} (same date)`;
+    if(metric.key==='downtime')return `${run}: ${demo===2?'11:45 − 11:00':'13:45 − 13:00'} = 45 min`;
+    return `${run}: sum(${value(run,metric.key)} kg) = ${format(run,metric.key)}`;
+  };
+  const open = (key:Metric,scope:Run|'difference') => {setSelected({metric:key,scope}); if(window.innerWidth<1150) requestAnimationFrame(()=>evidence.current?.scrollIntoView({behavior:'smooth',block:'start'}));};
+  const rowsView = (rows:typeof source, status:string) => rows.length?rows.map(row=><div className="p3-row" key={row.line}><strong>CSV line {row.line} · {row.cells[0]} · {status}</strong><div className="p3-raw">{headers.map((h,i)=>`${h}: ${row.cells[i] || '(blank)'}`).join(' · ')}</div></div>):<p className="ep-small">None for this result.</p>;
+  const exportCsv=()=>{
+    const records:string[][]=[['Design prototype — fixed demo comparison'],['Source file',data.file],['Baseline',left],['Selected run',right],['Metric',left,right,`${right} minus ${left}`,'Source CSV lines']];
+    metrics.forEach(m=>records.push([m.label,format(left,m.key),format(right,m.key),diffText(m.key),source.filter(r=>m.types.includes(r.cells[6])).map(r=>r.line).join('; ')]));
+    records.push(['Summary',summary],['Downtime','E-02: 45 min, separate from 6 h mold change; E-01: not logged'],['Input tolerance (kg)',tolerance],['Comparability','Line L1 / L1; machine EX-04 / EX-04; mold MLD-12 / MLD-12; product not assessed; input '+(demo===1?'not assessed':'within tolerance')]);
+    warnings.forEach(w=>records.push(['Issue',w]));
+    metrics.forEach(m=>{records.push(['Formula',m.label,m.key==='rate'?'sum(SCRAP) / sum(MATERIAL_IN) × 100':m.key==='changeover'||m.key==='downtime'?'sum(end_time − start_time)':'sum(quantity_kg)']);});
+    Object.entries(mapping).forEach(([k,v])=>records.push(['Mapping',k,v]));
+    records.push(['Event mapping','MATERIAL_IN→input; GOOD_OUT→good; SCRAP→scrap; CHANGEOVER→mold change; DOWNTIME_UNPLANNED→downtime'],['Original source rows'],['CSV line',...headers,'Calculation policy']);
+    source.forEach(r=>records.push([String(r.line),...r.cells,demo===1&&r.line===5?'Excluded identical duplicate':demo===2&&r.cells[0]==='EV-003'?'Unresolved conflict; affected metrics blocked':'Retained']));
+    const blob=new Blob(['\uFEFF'+records.map(r=>r.map(v=>`"${v.replaceAll('"','""')}"`).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`ethmar-comparison-demo-${demo+1}.csv`;link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);setNotice('Demo comparison CSV downloaded, including original rows and exclusions.');
+  };
+  return <div className="ethmar ep3">
+    <header className="ep-top"><div className="ep-brand"><span className="ep-mark">e</span><div><strong>ethmar</strong><small>Plastics / production workspace</small></div></div><span className="ep-badge"><span className="ep-dot"/>Phase 3 · Design prototype</span></header>
+    <div className="ep-shell"><aside className="ep-sidebar"><div><div className="ep-eyebrow">Comparison / 03</div><div className="ep-step active"><span className="ep-step-number">3</span><span><strong>Compare & verify</strong><small>Every number has a source</small></span></div></div><div className="ep-side-note"><p>Read the difference.<br/>Check the evidence.</p><a href="/__mockup/preview/ethmar/PhaseTwo" target="_blank" rel="noreferrer">Review Phase 2 separately <ArrowUpRight style={{display:'inline',width:13}}/></a></div><div className="ep-side-bottom">Fixed demo fixtures. No imported data or settings are carried between the phase previews.</div></aside>
+    <main className="ep-main"><div className="ep-eyebrow">Production analysis / Comparison</div><div className="ep-heading"><div><h1>A difference you can check.</h1><p>Compare two runs. Follow any result back to its original rows.</p></div><span className="ep-index">03</span></div>
+    <div className="ep-notice"><Info/><span><strong>Design prototype.</strong> Authored demo results, not live CSV analysis. CSV download and printing work for this demo only; changes are not saved.</span></div>
+    <section className="ep-panel"><div className="ep-panel-body p3-controls"><label className="ep-field">Demo dataset<select value={demo} onChange={e=>{setDemo(Number(e.target.value));setNotice('');}}>{demos.map((d,i)=><option value={i} key={d.file}>{d.name}</option>)}</select></label><label className="ep-field">Baseline<select value={left} onChange={e=>{const n=e.target.value as Run;setLeft(n);setRight(n==='E-01'?'E-02':'E-01');}}><option>E-01</option><option>E-02</option></select></label><label className="ep-field">Compared run<select value={right} onChange={e=>{const n=e.target.value as Run;setRight(n);setLeft(n==='E-01'?'E-02':'E-01');}}><option>E-01</option><option>E-02</option></select></label><label className="ep-field">Input tolerance · kg<input type="number" min="0" value={tolerance} onChange={e=>setTolerance(String(Math.max(0,Number(e.target.value))))}/></label></div></section>
+    <section className="p3-summary"><div><div className="ep-eyebrow">The short version</div><h2>{summary}</h2><p>{unavailable?'Resolve the missing or conflicting material data before interpreting waste differences. Mold changes remain E-01: 4 h and E-02: 6 h.':'E-02 produced 100 kg scrap (10%), versus E-01’s 50 kg (5%). Its mold change took 6 h versus 4 h.'} E-02’s 45 min unplanned downtime is shown separately{demo===2?' despite the overlap warning':', outside changeover'}. These observations do not establish causation.</p><small>Summary values are verifiable using the matching metric cells below.</small></div><ScanLine/></section>
+    <div className="p3-checks" aria-label="Comparability"><span className="p3-check"><Check style={{display:'inline',width:12}}/> Line · L1 / L1</span><span className="p3-check">Machine · EX-04 / EX-04</span><span className="p3-check">Mold · MLD-12 / MLD-12</span><span className={`p3-check ${demo===1?'warn':''}`}>Input · {demo===1?'Not assessed — missing input':'Within tolerance'}</span><span className="p3-check warn">Product · Not assessed</span></div>
+    <p className="ep-small" style={{marginBottom:16}}>Compare with care: product is unmapped{demo===1?' and material input is missing for E-02':''}. Unavailable checks are not treated as matches. Tolerance is absolute; differences equal to the threshold are allowed.</p>
+    {warnings.map(w=><div className="p3-warning" key={w}><ShieldAlert style={{display:'inline',width:14,marginRight:8}}/>{w}</div>)}
+    <div className="p3-layout"><section className="ep-panel"><div className="ep-panel-head"><h2>Run comparison</h2><span className="ep-tag">Click a result</span></div><div className="p3-result-scroll"><table className="p3-results"><thead><tr><th>Metric</th><th>{left}<small>Baseline</small></th><th>{right}<small>Compared</small></th><th>Difference<small>{right} − {left}</small></th></tr></thead><tbody>{metrics.map(m=><tr key={m.key}><td>{m.label}{m.key==='downtime'&&<small>Always separate</small>}</td>{([left,right,'difference'] as const).map(scope=><td key={scope}><button className={`p3-number ${selected.metric===m.key&&selected.scope===scope?'selected':''} ${(scope==='difference'?difference(m.key):value(scope,m.key))===null?'blocked':''}`} aria-label={`View evidence: ${m.label}, ${scope}`} onClick={()=>open(m.key,scope)}>{scope==='difference'?diffText(m.key):format(scope,m.key)}</button>{scope==='difference'&&m.key==='rate'&&<small>Percentage points, not percent</small>}</td>)}</tr>)}</tbody></table></div><div className="ep-panel-body"><p className="ep-small">Not logged is not zero. A blocked result does not hide other usable metrics. Source: {data.file}</p></div></section>
+    <section className="ep-panel p3-evidence" ref={evidence} aria-label="Evidence panel" aria-live="polite"><div className="ep-panel-head"><div><div className="ep-eyebrow">Evidence / unchanged source</div><h2>{metric.label}</h2></div><span className="ep-tag">{selected.scope==='difference'?'Difference':selected.scope}</span></div><div className="ep-panel-body"><p className="ep-small">{data.file} · fixed demo mapping snapshot</p><h3>Formula with actual values</h3><div className="p3-formula">{runs.map(run=><p key={run} style={{marginBottom:8}}>{formula(run)}</p>)}{selected.scope==='difference'&&<p>{difference(metric.key)===null?'Difference cannot calculate because at least one operand is unavailable.':`${format(right,metric.key)} − ${format(left,metric.key)} = ${diffText(metric.key)}${metric.key==='rate'?' (percentage points)':''}`}</p>}</div>{demo===2&&metric.key==='downtime'&&<div className="p3-warning">Overlap with changeover: duration is kept unchanged. No automatic subtraction or merging.</div>}<h3>Source rows used</h3>{rowsView(included,'Retained source input')}{included.length===0&&<p className="ep-small">No usable source inputs for this selection.</p>}<h3>Excluded or unresolved rows</h3>{rowsView(excluded,'Excluded: identical repeat of CSV line 4')}{rowsView(unresolved,'Unresolved conflict: no winning value selected')}<details open><summary>Column & event mapping used</summary><div className="p3-mapping" style={{marginTop:12}}>{Object.entries(mapping).map(([k,v])=><div key={k}>{k} → <strong>{v}</strong></div>)}</div><p className="ep-small" style={{marginTop:12}}>MATERIAL_IN → input · GOOD_OUT → good output · SCRAP → scrap · CHANGEOVER → mold change · DOWNTIME_UNPLANNED → separate downtime</p></details></div></section></div>
+    <div className="p3-actions"><button className="ep-btn primary" onClick={exportCsv}><FileDown/>Export comparison CSV</button><button className="ep-btn" onClick={()=>window.print()}><Printer/>Print comparison</button></div><p role="status" className="ep-small">{notice}</p><p className="ep-small">Print includes the comparison, warnings and currently selected evidence. CSV includes every original demo row, mapping and exclusion policy.</p><footer className="ep-footer"><span className="ep-eyebrow">Phase 3 / ready for design review</span><span className="ep-small">Read-only source · no causal claims</span></footer>
+    </main></div></div>;
+}
