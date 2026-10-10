@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Ethmar — Production preparation"
+description = "Browser-only CSV import, file review and reusable mapping profiles for factory analysts. Stage 1 of the production comparison app."
+version = "1.0.0"
+id = "artifacts/ethmar-app"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22696
+
+[services.development]
+run = "pnpm --filter @workspace/ethmar-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ethmar-app", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ethmar-app/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22696"
+BASE_PATH = "/"
