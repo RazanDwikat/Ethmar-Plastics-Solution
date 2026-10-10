@@ -44,3 +44,9 @@ Similar-run suggestions are optional shortcuts, never restrictions: rank up to f
 **Why:** The user requested transparent rule-based suggestions, no AI or hidden scoring, and no causal claims.
 
 **How to apply:** Keep search/filter controls independent from suggestions and show “Cannot calculate” for blocked summaries rather than guessed values.
+
+Setup must support factories beyond plastics: user-defined quantity/timed event labels and source values, event-row or run-row files, configurable units, optional recorded reasons, and Ratio, Duration, Total, Difference, Count, Rate per hour and Average templates. Plastics defaults retain Scrap / Material input.
+
+**Why:** The user requested a generic factory tool and a cake-factory example without line or mold, using cleaning time.
+
+**How to apply:** Derive measurement labels from definitions, preserve original reasons as recorded facts without causal claims, and never invent event counts from run-summary rows.
