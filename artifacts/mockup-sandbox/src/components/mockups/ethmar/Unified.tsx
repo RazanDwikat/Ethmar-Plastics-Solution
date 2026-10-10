@@ -1,3 +1,3 @@
-import { GenericWorkspace } from './GenericWorkspace';
-export function Unified(){return <GenericWorkspace/>;}
+import { CheckedWorkspace } from './CheckedWorkspace';
+export function Unified(){return <CheckedWorkspace/>;}
 export default Unified;

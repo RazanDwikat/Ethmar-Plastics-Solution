@@ -25,7 +25,7 @@ The user requested design-only work first, initially approving each phase separa
 
 **Why:** The user explicitly replaced the separate-phase navigation with a simpler unified experience for nontechnical users.
 
-**How to apply:** Keep all mapping, data checks, and comparison/evidence capabilities in the unified flow. Setup has upload, confirm columns and done; advanced controls are collapsed. Use plain language, minimum 14px text, one primary button per screen, and icon-plus-text statuses. The clean demo's 45-minute downtime must be outside changeover. Demo 2 duplicates E-01 scrap and omits E-02 material input; demo 3 includes a conflicting event ID with a different quantity and downtime overlapping changeover. Summarize which run had more waste, whether its mold change was longer, and its separate downtime using clear units such as 6 h and 45 min.
+**How to apply:** Keep all mapping, data checks, and comparison/evidence capabilities in the unified flow. Setup has upload, file check, confirm columns and done; advanced controls are collapsed. Use plain language, minimum 14px text, one primary button per screen, and icon-plus-text statuses. The clean demo's 45-minute downtime must be outside changeover. Demo 2 duplicates E-01 scrap and omits E-02 material input; demo 3 includes a conflicting event ID with a different quantity and downtime overlapping changeover. Summarize which run had more waste, whether its mold change was longer, and its separate downtime using clear units such as 6 h and 45 min.
 
 Unmapped CSV columns remain in original source rows and may become named custom fields. Users choose evidence/source-only visibility or also comparison-attribute use; differing comparison values trigger nonblocking “compare with care” notices. Save custom-field choices in mapping profiles.
 
@@ -50,3 +50,9 @@ Setup must support factories beyond plastics: user-defined quantity/timed event 
 **Why:** The user requested a generic factory tool and a cake-factory example without line or mold, using cleaning time.
 
 **How to apply:** Derive measurement labels from definitions, preserve original reasons as recorded facts without causal claims, and never invent event counts from run-summary rows.
+
+File inspection precedes mapping and must preserve original rows and line numbers. Shape guesses are overridable; unreadable files or lack of a run identifier require actionable explanations rather than guessed runs. Timed events may use start/end columns or a single duration column.
+
+**Why:** The user requested explicit file-quality review before mapping and support for different timing representations.
+
+**How to apply:** Do not imply CSV can prove merged spreadsheet cells; flag suspicious headings instead. Duration-only records cannot establish time overlap.

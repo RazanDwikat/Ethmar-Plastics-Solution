@@ -2,6 +2,9 @@
 type ModuleMap = Record<string, () => Promise<Record<string, unknown>>>;
 export const modules: ModuleMap = {
   "./components/mockups/ethmar/AdvancedSentences.tsx": () => import("../components/mockups/ethmar/AdvancedSentences.tsx"),
+  "./components/mockups/ethmar/CheckedModel.tsx": () => import("../components/mockups/ethmar/CheckedModel.tsx"),
+  "./components/mockups/ethmar/CheckedWorkspace.tsx": () => import("../components/mockups/ethmar/CheckedWorkspace.tsx"),
+  "./components/mockups/ethmar/FileCheck.tsx": () => import("../components/mockups/ethmar/FileCheck.tsx"),
   "./components/mockups/ethmar/GenericModel.tsx": () => import("../components/mockups/ethmar/GenericModel.tsx"),
   "./components/mockups/ethmar/GenericWorkspace.tsx": () => import("../components/mockups/ethmar/GenericWorkspace.tsx"),
   "./components/mockups/ethmar/PhaseOne.tsx": () => import("../components/mockups/ethmar/PhaseOne.tsx"),
