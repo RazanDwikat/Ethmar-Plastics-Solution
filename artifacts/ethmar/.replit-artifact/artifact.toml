@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Ethmar · Setup & Compare"
+description = "Private, browser-only inspection of production CSV and Excel files with unchanged source rows and file-quality checks. Phase A of the approved Ethmar application."
+version = "1.0.0"
+id = "artifacts/ethmar"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 18457
+
+[services.development]
+run = "pnpm --filter @workspace/ethmar run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ethmar", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ethmar/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "18457"
+BASE_PATH = "/"

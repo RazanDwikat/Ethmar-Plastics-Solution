@@ -9,6 +9,12 @@ Ethmar Plastics needs a read-only comparison tool over approved ERP exports, not
 
 **How to apply:** Preserve imported values and source line references. Evidence must include the formula with actual values, interpreting mapping, included rows, and excluded rows with reasons. Generic ratio, duration, and total templates are allowed; a free-form formula language is not.
 
+The real application must parse CSV and Excel entirely in the browser: no file data may be uploaded to a server. Browser persistence uses IndexedDB only when its phase is approved. Keep the approved design and implement one approved phase at a time: A file inspection, B mapping/settings/profiles/persistence, C calculation checks, D comparison/evidence/export, E final polish/tests.
+
+**Why:** The user's implementation brief explicitly requires privacy and approval after each phase, superseding the earlier design-only scope.
+
+**How to apply:** Stop after each phase and explain exact testing steps. Keep future phases unavailable rather than presenting sample-only behavior as working production features. Never introduce server storage for imports.
+
 Identical repetitions of an event ID within an import count once with visible exclusions. Conflicting rows sharing an event ID block affected metrics. Missing required data blocks affected calculations; imbalance and overlapping-time warnings remain visible without silent repairs.
 
 **Why:** The user explicitly approved this distinction between immutable evidence and calculation exclusions.
