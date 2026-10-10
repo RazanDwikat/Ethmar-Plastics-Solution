@@ -1,0 +1,9 @@
+.eu .sentence-settings section{padding:24px 0;border-top:1px solid #d9e1da;margin-top:24px}
+.eu .sentence-settings section h3{margin-top:0}
+.eu .setting-sentence{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:18px 0;line-height:1.8}
+.eu .setting-sentence select,.eu .setting-sentence input{display:inline-block;width:auto;max-width:100%;margin:0;min-height:44px}
+.eu .setting-sentence input[type=number]{width:110px}
+.eu .setting-sentence .sentence-name{width:195px;font-weight:700}
+.eu .sentence-result{color:#21655f;padding:8px 12px;background:#eaf1eb;border-radius:8px;font-size:15px}
+.eu .sentence-result small{display:block;color:#485b54;max-width:500px}
+@media(max-width:600px){.eu .sentence-result{width:100%}.eu .setting-sentence{gap:8px}.eu .sentence-settings section{padding:16px 0}}
