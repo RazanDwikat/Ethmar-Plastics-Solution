@@ -13,7 +13,7 @@ The real application must parse CSV and Excel entirely in the browser: no file d
 
 **Why:** The user's implementation brief explicitly requires privacy and approval after each phase, superseding the earlier design-only scope.
 
-**How to apply:** Stop after each phase and explain exact testing steps. Keep future phases unavailable rather than presenting sample-only behavior as working production features. Never introduce server storage for imports.
+**How to apply:** Stop after each phase and explain exact testing steps. Keep future phases unavailable rather than presenting sample-only behavior as working production features. Phase B template examples must be clearly illustrative; actual imported-run results belong to Phase C. Never introduce server storage for imports.
 
 Identical repetitions of an event ID within an import count once with visible exclusions. Conflicting rows sharing an event ID block affected metrics. Missing required data blocks affected calculations; imbalance and overlapping-time warnings remain visible without silent repairs.
 
@@ -27,7 +27,7 @@ The clean demo must show E-01/E-02 scrap rates of 5%/10%, a 5-percentage-point d
 
 **How to apply:** Group runs by the mapped run ID, or order ID when chosen during mapping if no run column is mapped. Include a second demo with one duplicate and one missing row.
 
-The user requested design-only work first, initially approving each phase separately. They now request merging the three approved prototypes into one experience with Setup for analysts and Compare for managers, without removing features. Stop after showing the redesign and explaining how to test.
+The user requested design-only work first, then approved merging the three prototypes into one experience with Setup for analysts and Compare for managers, without removing features. The later real-app brief preserves that unified design and requires stopping after each implementation phase.
 
 **Why:** The user explicitly replaced the separate-phase navigation with a simpler unified experience for nontechnical users.
 
