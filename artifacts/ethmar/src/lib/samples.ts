@@ -14,8 +14,8 @@ const extra = [
 const csv = (rows: string[][]) => rows.map(r => r.map(v => `"${v.replaceAll('"','""')}"`).join(',')).join('\r\n');
 export const samples = [
   { id:'clean', name:'Clean production log', description:'Four runs, recorded as events. E-01 and E-02 share a line and equipment; downtime is outside changeover.', csv:csv([headers,...clean,...extra]) },
-  { id:'duplicate-missing', name:'Duplicate & missing input', description:'A repeated E-01 scrap event and missing E-02 input. These production checks will be added in Phase C.', csv:csv([headers,...clean.slice(0,3),[...clean[2]],clean[3],...clean.slice(5),...extra]) },
-  { id:'conflict-overlap', name:'Conflict & overlapping time', description:'Two quantities for one event and overlapping time ranges. Phase A preserves all rows; production checks follow in Phase C.', csv:csv([headers,...clean.slice(0,3),row('EV-003','E-01','SCRAP','65'),...clean.slice(3,8),row('EV-009','E-02','DOWNTIME_UNPLANNED','','2026-10-08 11:00','2026-10-08 11:45'),...extra]) },
+  { id:'duplicate-missing', name:'Duplicate & missing input', description:'A repeated E-01 scrap event and missing E-02 input. Confirm the setup to inspect the affected results and original rows.', csv:csv([headers,...clean.slice(0,3),[...clean[2]],clean[3],...clean.slice(5),...extra]) },
+  { id:'conflict-overlap', name:'Conflict & overlapping time', description:'Two quantities for one event and overlapping time ranges. Inspect the conflicting rows and separate durations after confirming the setup.', csv:csv([headers,...clean.slice(0,3),row('EV-003','E-01','SCRAP','65'),...clean.slice(3,8),row('EV-009','E-02','DOWNTIME_UNPLANNED','','2026-10-08 11:00','2026-10-08 11:45'),...extra]) },
   { id:'cake', name:'Cake factory', description:'Four runs, one row per run, cleaning time and recorded reasons. No line or mold columns.', csv:csv([
     ['run_id','order','date','machine','shift','input_kg','good_kg','scrap_kg','cleaning_hours','stoppage_hours','reason'],
     ['C-01','B-201','2026-10-07','Oven 2','A','200','190','10','0.5','0.25','Oven temperature reset'],

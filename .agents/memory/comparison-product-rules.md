@@ -21,6 +21,12 @@ Identical repetitions of an event ID within an import count once with visible ex
 
 **How to apply:** Never merge or adjust changeover and unplanned downtime automatically. Any two runs remain comparable; missing comparison attributes are “not assessed.” Explanations cannot claim causation.
 
+For one-row-per-run exports, repeated summary rows must not be summed as separate events. Exact repeats count once; differing summaries make only disagreeing measures unavailable, while matching measure values count once.
+
+**Why:** The event-row duplicate policy cannot safely be applied as additive arithmetic to run summaries; that would inflate production totals.
+
+**How to apply:** Keep every original summary visible, explain exclusions, and retain independently valid measures. Duration-only sources cannot establish time overlap; report “not assessed” rather than claiming no overlap.
+
 The clean demo must show E-01/E-02 scrap rates of 5%/10%, a 5-percentage-point difference, changeover of 4h/6h with a 2h difference, and E-02 unplanned downtime of 45min separately. Both runs have line L1; product stays unmapped.
 
 **Why:** These are the user's explicit acceptance case and missing-attribute demonstration.
