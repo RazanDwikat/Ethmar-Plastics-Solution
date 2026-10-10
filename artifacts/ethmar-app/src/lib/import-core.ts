@@ -84,9 +84,18 @@ export function inspectImport(file:ParsedFile,headerId:number|null,decisions:Rec
   const headers=Array.from({length:width},(_,index)=>({key:`c${index}`,label:header?.values[index]??`Column ${index+1}`,index}));
   const problems:Problem[]=[];
   const add=(row:Row,kind:string,message:string)=>problems.push({id:`${row.id}-${kind}`,line:row.line,kind,message});
+  for(const range of file.workbook?.merges??[]){
+    const match=range.match(/^[A-Z]+(\d+):[A-Z]+(\d+)$/);
+    if(match)for(const row of file.rows.filter(r=>r.line>=Number(match[1])&&r.line<=Number(match[2])))
+      add(row,`merged-${range}`,`Sheet “${file.workbook!.selected}”, merged cells ${range} include this row. Empty cells have not been filled. Review and choose how to use the row.`);
+  }
   if(header&&(header.values.some(v=>!v.trim())||new Set(header.values.map(normalize)).size!==header.values.length))
-    add(header,'headings','Some headings are blank or repeated. Choose a single clear header row; CSV cannot establish whether spreadsheet cells were merged.');
+    add(header,'headings','Some headings are blank or repeated. Choose a clear header row or review each column by its position.');
   const originalData=file.rows.filter(r=>r.id!==headerId);
+  for(const row of originalData){
+    const styles=new Set(row.values.map(dateStyle).filter(Boolean));
+    if(styles.size>1)add(row,'mixed-dates','Dates on this row use different formats. Confirm how each date should be read; the original text has not changed.');
+  }
   for(const row of originalData){
     if(!nonempty(row))add(row,'blank','This row is empty. Choose whether to ignore it or keep it.');
     if(header&&row.id<header.id&&nonempty(row))add(row,'title','This row is above the suggested header and may be a title. It has not been removed.');
@@ -133,7 +142,7 @@ export function validateSetup(record:ImportRecord):string[]{
     const index=inspection.headers.find(h=>h.key===identity)!.index;
     if(!inspection.dataRows.some(r=>(r.values[index]??'').trim()))issues.push('The chosen run column has no recorded identifiers. Choose another column or export a file with run identifiers.');
     else for(const row of inspection.dataRows)if(!(row.values[index]??'').trim())
-      issues.push(`CSV line ${row.line} has no run identifier. Choose the correct column, explicitly ignore this row in File check, or correct the source file and import it again.`);
+      issues.push(`${file.workbook?`Sheet “${file.workbook.selected}”, row`:'CSV line'} ${row.line} has no run identifier. Choose the correct column, explicitly ignore this row in File check, or correct the source file and import it again.`);
   }
   for(const [role,key] of Object.entries(s.mapping))if(key&&!keys.has(key))issues.push(`The saved ${role} column is not in this file. Choose its column again.`);
   if(!s.quantityUnit.trim())issues.push('Enter a quantity unit.');
@@ -143,7 +152,9 @@ export function validateSetup(record:ImportRecord):string[]{
     if(!d.label.trim()||labels.has(d.label.trim().toLocaleLowerCase()))issues.push('Give each event type or measure a unique, non-empty name.');
     labels.add(d.label.trim().toLocaleLowerCase());
     if(s.shape==='run'){
-      if(!valid(d.column))issues.push(`Choose the column for ${d.label||'this measure'}.`);
+      if(d.kind==='quantity'&&!valid(d.column))issues.push(`Choose the column for ${d.label||'this measure'}.`);
+      if(d.kind==='timed'&&d.timeMode==='duration'&&!valid(d.duration||d.column))issues.push(`Choose the duration column for ${d.label}.`);
+      if(d.kind==='timed'&&d.timeMode==='range'&&(!valid(d.start||s.mapping.start)||!valid(d.end||s.mapping.end)))issues.push(`Choose start and end columns for ${d.label}.`);
     } else {
       if(!valid(s.mapping.eventType))issues.push('Choose the column that contains event names.');
       if(!d.values.length||d.values.every(v=>!v.trim()))issues.push(`Enter at least one source value for ${d.label||'this event type'}.`);

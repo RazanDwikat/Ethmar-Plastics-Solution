@@ -39,10 +39,10 @@ describe('immutable CSV reading',()=>{
 describe('file review and mappings',()=>{
   it('reports requested messy lines without changing or automatically ignoring any row',()=>{
     const f=parseCsv(samples[4].text,'messy.csv');const inspection=inspectImport(f,f.suggestedHeader,{});
-    for(const [kind,line] of [['title',1],['blank',3],['text-number',4],['date-7',7],['repeated-header',8],['total',12]] as const)
+    for(const [kind,line] of [['title',1],['blank',2],['text-number',4],['mixed-dates',7],['repeated-header',8],['total',12]] as const)
       expect(inspection.problems.some(p=>p.kind===kind&&p.line===line),`${kind} at ${line}`).toBe(true);
     expect(inspection.dataRows).toHaveLength(11);
-    const reviewed=inspectImport(f,1,{0:'ignore',2:'ignore',7:'ignore',11:'ignore'});
+    const reviewed=inspectImport(f,2,{0:'ignore',1:'ignore',7:'ignore',11:'ignore'});
     expect(reviewed.dataRows).toHaveLength(7);
     expect(f.originalText).toBe(samples[4].text);
   });

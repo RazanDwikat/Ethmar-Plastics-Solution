@@ -1,0 +1,37 @@
+import {it,expect} from 'vitest';
+import * as XLSX from 'xlsx';
+import 'fake-indexeddb/auto';
+import {parseWorkbook} from './workbook';
+import {inspectImport,makeImport} from './import-core';
+import {loadStore,saveStore} from './storage';
+it('retains Excel displayed strings, row/cell locations, merges and original workbook bytes across saving',async()=>{
+ const book=XLSX.utils.book_new();
+ const sheet=XLSX.utils.aoa_to_sheet([['Report'],[],['run_id','quantity','date','code'],['A',1000,45931,7],['B','', '', ''],['hello\nworld']]);
+ sheet.B4.z='#,##0';sheet.C4.z='yyyy-mm-dd';sheet.D4.z='0000';
+ sheet['!merges']=[{s:{r:0,c:0},e:{r:0,c:3}}];
+ XLSX.utils.book_append_sheet(book,sheet,'First');
+ XLSX.utils.book_append_sheet(book,XLSX.utils.aoa_to_sheet([['run_id','value'],['Z',42]]),'Other');
+ const bytes=XLSX.write(book,{type:'array',bookType:'xlsx'}) as ArrayBuffer;
+ const file=parseWorkbook(bytes,'book.xlsx');
+ expect(file.workbook?.selected).toBe('First');
+ expect(file.workbook?.sheets).toEqual(['First','Other']);
+ expect(file.rows[3].values).toEqual(['A','1,000','2025-10-01','0007']);
+ expect(file.rows[4].values[1]).toBe('');
+ expect(file.rows[5].line).toBe(6);expect(file.rows[5].values[0]).toBe('hello\nworld');
+ expect(file.rows[3].cells).toEqual(['A4','B4','C4','D4']);
+ expect(file.suggestedHeader).toBe(2);
+ expect(inspectImport(file,2,{}).problems.some(p=>p.kind==='merged-A1:D1'&&p.line===1)).toBe(true);
+ const record=makeImport(file);record.decisions[0]='ignore';record.decisions[1]='ignore';
+ await saveStore({imports:[record],profiles:[],activeId:record.id});
+ const restored=(await loadStore()).imports[0];
+ expect(restored).toEqual(record);
+ expect(new Uint8Array(restored.file.workbook!.bytes)).toEqual(new Uint8Array(bytes));
+ const second=parseWorkbook(restored.file.workbook!.bytes,'book.xlsx','Other');
+ expect(second.rows[1].values).toEqual(['Z','42']);
+});
+it('refuses non-workbook data and formulas without a saved value',()=>{
+ expect(()=>parseWorkbook(new TextEncoder().encode('abc').buffer,'wrong.xlsx')).toThrow('not a readable');
+ const book=XLSX.utils.book_new();const sheet=XLSX.utils.aoa_to_sheet([['run_id','value'],['A']]);
+ sheet.B2={t:'n',f:'1+1'};sheet['!ref']='A1:B2';XLSX.utils.book_append_sheet(book,sheet,'Sheet1');
+ expect(()=>parseWorkbook(XLSX.write(book,{type:'array',bookType:'xlsx'}),'formula.xlsx')).toThrow('no saved displayed value');
+});

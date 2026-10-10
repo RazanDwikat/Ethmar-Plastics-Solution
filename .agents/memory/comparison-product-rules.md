@@ -56,3 +56,9 @@ File inspection precedes mapping and must preserve original rows and line number
 **Why:** The user requested explicit file-quality review before mapping and support for different timing representations.
 
 **How to apply:** Do not imply CSV can prove merged spreadsheet cells; flag suspicious headings instead. Duration-only records cannot establish time overlap.
+
+Excel imports must preserve displayed cell text and original workbook bytes, including worksheet/row/cell locations. Never fill merged ranges or recalculate formulas during import; missing cached formula values require an actionable explanation.
+
+**Why:** The user explicitly requires displayed dates, leading zeros and formatted quantities to remain unchanged. They will upload their own CSV/XLSX files; missing sample attachments are not a blocker.
+
+**How to apply:** Keep format-specific evidence distinct: CSV physical lines versus Excel worksheet cells. Sheet changes must disclose reset effects and preserve previously saved setups. Stage 1 verifies source fidelity; numeric acceptance results belong to later approved stages.
