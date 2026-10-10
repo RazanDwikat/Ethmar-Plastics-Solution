@@ -74,3 +74,9 @@ Setup is the analyst's preparation workflow, not a results dashboard. Confirmed 
 **Why:** The user explicitly objected to Phase C's results being displayed under Setup instead of Compare.
 
 **How to apply:** Preserve this separation even when adding new calculations. An edit to interpretation requires renewed confirmation before manager results are shown.
+
+Open printable reports separately and require an explicit print action, rather than automatically invoking a native print dialog from Compare.
+
+**Why:** Automatic native printing interrupted the main browser journey. A separate report keeps Setup and Compare available and gives the user control over when to print.
+
+**How to apply:** Retain warnings and evidence in the report, with an equivalent local HTML download when popups are blocked.

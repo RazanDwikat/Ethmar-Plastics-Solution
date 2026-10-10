@@ -43,3 +43,10 @@ test('exports escape markup and formula injection without modifying original cel
  assert.ok(csv.includes(`"'=HYPERLINK`));assert.ok(!html.includes('<script>'));assert.match(html,/&lt;script&gt;/);
  assert.deepEqual(r.source,before);
 });
+test('printable document requires an explicit print action and hides controls on paper',async()=>{
+ const r=await report(),html=comparisonPrintHtml(r,r.runs[0],r.runs[1]);
+ assert.match(html,/onclick="window.print\(\)"/);
+ assert.match(html,/Print \/ save as PDF/);
+ assert.match(html,/\.print-actions\{display:none\}/);
+ assert.ok(!html.includes('onload='));
+});

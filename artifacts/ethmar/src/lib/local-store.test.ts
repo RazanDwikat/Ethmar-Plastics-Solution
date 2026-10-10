@@ -29,3 +29,23 @@ test('browser persistence keeps original bytes/drafts/profiles and ordered delet
   await Promise.all([olderWrite,deletion]);
   assert.deepEqual(await loadLocalData(),{workspace:null,profiles:[]});
 });
+test('corrupt stored data is rejected without overwriting the original record',async()=>{
+  await deleteAllLocalData();
+  const db=await new Promise<IDBDatabase>((resolve,reject)=>{
+    const request=indexedDB.open('ethmar-private-workspace',1);
+    request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+  });
+  const damaged={file:{name:'keep-original.csv'},screen:'done'};
+  await new Promise<void>((resolve,reject)=>{
+    const tx=db.transaction('data','readwrite');
+    tx.objectStore('data').put(damaged,'workspace');
+    tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);
+  });
+  await assert.rejects(loadLocalData(),/Nothing was changed/);
+  const stillStored=await new Promise((resolve,reject)=>{
+    const request=db.transaction('data','readonly').objectStore('data').get('workspace');
+    request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+  });
+  assert.deepEqual(stillStored,damaged);
+  db.close();await deleteAllLocalData();
+});

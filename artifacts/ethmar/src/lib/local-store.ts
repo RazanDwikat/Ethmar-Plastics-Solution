@@ -1,5 +1,6 @@
 import type { ImportedFile } from './inspection';
 import type { Profile, Setup } from './setup';
+import { validateSavedData } from './saved-data-validation';
 export type SavedWorkspace = {
   file:ImportedFile; sheetIndex:number|null; header:number|null|undefined; shape:'event'|'run'|null;
   screen:'upload'|'sheets'|'check'|'mapping'|'done'|'compare'; setup:Setup|null; confirmed?:boolean; savedAt:string;
@@ -32,7 +33,12 @@ export async function loadLocalData():Promise<LocalData>{
   try{return await new Promise((resolve,reject)=>{
     const tx=db.transaction(STORE,'readonly'),s=tx.objectStore(STORE);
     const workspace=s.get('workspace'),profiles=s.get('profiles');
-    tx.oncomplete=()=>resolve({workspace:workspace.result??null,profiles:profiles.result??[]});
+    tx.oncomplete=()=>{
+      try{
+        const data={workspace:workspace.result??null,profiles:profiles.result??[]};
+        validateSavedData(data.workspace,data.profiles);resolve(data);
+      }catch(error){reject(error);}
+    };
     tx.onabort=tx.onerror=()=>reject(new Error('Saved data could not be read. Keep your source files; you can retry or delete browser data.'));
   });}finally{db.close();}
 }
