@@ -1,0 +1,113 @@
+Turn the approved "Ethmar · Setup & Compare" design into a REAL working website.
+Keep every feature from the design and follow its layout, plain-language wording and
+visual style. Do not simplify away features; keep the interface simple through
+progressive disclosure (advanced settings collapsed, one primary button per screen,
+plain language, minimum 14px text, status shown with icon + text).
+
+PURPOSE
+A read-only tool that turns approved ERP/production exports into checkable
+comparisons of waste, mold/cleaning changeover time and unplanned downtime between two
+production runs, with the original row behind every number. It must work for other
+factories (and other domains) through configuration, never hardcoded words.
+
+CORE RULES (never break these)
+1. Read-only: never modify the uploaded file or original values. Keep original rows,
+   original line numbers and original cell values.
+2. Privacy: parse files in the browser. Nothing is uploaded to a server.
+3. Traceability: every displayed number opens a drawer with (a) the formula with
+   actual values, (b) the exact source rows/cells used, with line numbers, (c) rows
+   excluded and why, (d) notes, and under "Technical details" the mapping used.
+4. Data problems are always visible, never silently fixed:
+   - identical duplicate event ID: count once, show both rows, warn
+   - same event ID with conflicting values: block the affected metrics, show all rows
+   - missing required data: show "Can't calculate" plus a one-sentence reason, only
+     for affected metrics (other metrics stay visible)
+   - good output + scrap does not equal material input: warn (optional per setup)
+   - changeover and unplanned downtime overlap: warn, never add, subtract or merge
+   - invalid numbers/timestamps: flag the rows
+5. Changeover and unplanned downtime are always separate numbers. "Not logged" is
+   never treated as zero.
+6. Never claim causation. Any explanation is labeled a hypothesis. Recorded reason
+   columns are shown as recorded facts only.
+7. Differences between runs in line, machine, mold, product, input quantity (beyond
+   tolerance) or custom attributes show a non-blocking "heads up" notice. Unmapped
+   attributes show "not assessed", never "match".
+8. Scrap rate = scrap / material input. Differences in rates are shown in
+   percentage points. Difference = compared run minus baseline run.
+
+FILE SUPPORT
+- Upload CSV and Excel (.xlsx). CSV: detect delimiter, encoding (UTF-8, Arabic
+  supported) and decimal separator, and let the user override.
+- Excel: if several sheets, let the user pick the sheet. Convert Excel date serial
+  numbers to dates but keep the original value visible. Use cached values for
+  formulas and warn about it. Detect merged cells, multiple header rows, repeated
+  headers and totals rows inside the data and warn plainly.
+- "File check" step after upload and before mapping: rows and columns found, header
+  row found, delimiter/encoding, guessed file shape (one row per event / one row per
+  run, user can override), column types, and a plain list of file problems. If the
+  file cannot be read or no column can identify a run, explain why and what to do.
+- Keep the built-in sample datasets (clean, duplicate+missing input, conflict+overlap),
+  plus a cake factory sample (one row per run, no mold/line, cleaning time).
+
+SETUP (analyst, done once)
+Upload -> File check -> Confirm columns -> Done. Auto-suggest column roles from an
+editable synonym list (user confirms). Normalize headers (case, spaces, dashes).
+Advanced settings (collapsed, with a one-line summary of the defaults):
+- group runs by run ID or order ID
+- user-defined event types: label, matching source value(s), kind (quantity/timed);
+  pre-filled with the plastics defaults; UI labels come from these definitions
+- file shape "one row per event" or "one row per run" (for runs: map columns to
+  measures instead of event words)
+- timed events use start+end columns or a single duration column
+- quantity unit as a setting (kg, units, liters, other)
+- measurement templates: Ratio, Duration, Total, Difference (A-B), Count, Rate per
+  hour, Average; each shows a live example result; default "Scrap rate" = scrap /
+  material input
+- input tolerance (absolute, in the quantity unit; difference equal to tolerance is
+  allowed; default 0)
+- custom fields: any unmapped column can get a display name and be used for evidence
+  only or also for comparison
+- saved profiles: save/reuse/delete named setups
+Persistence: store imports and profiles in the browser (IndexedDB), clearly explain
+that clearing browser data removes them, and add a "Delete my data" button.
+
+COMPARE (manager)
+Choose Baseline and Compared run via two cards; a full run list opens from "Choose a
+run" with search, filters (date, line, machine, mold, shift, order, custom fields),
+sortable columns and a quick summary per run. Similar-run suggestions as small chips:
+rule-based only (same line, mold, machine, input within tolerance, custom comparison
+attributes), ranked by matching attributes then date proximity, each showing why it
+matches and what was not assessed, with a "How suggestions work" note, never hiding
+other runs. Page order: plain-language answer sentence, four large metric cards
+(scrap rate, changeover, unplanned downtime, good output) with both runs and the
+difference, data-health badge per run (clear / note / missing) expanding to the
+problem details with source rows, then the full comparison table. Export the
+comparison as CSV and a printable page that keeps warnings, units, unavailable
+labels and source references.
+
+LANGUAGE
+Plain language everywhere (avoid "fixture", "blocking", "snapshot", "numerator").
+Add small "?" tooltips for unavoidable terms. When a value is unavailable, say why
+in one sentence. Support Arabic text in data and set up the UI so RTL/Arabic UI can
+be added later.
+
+BUILD ONE PHASE AT A TIME. After each phase stop, list exactly how I can test it, and
+wait for my approval before the next:
+Phase A: file upload (CSV + Excel), sheet picker, File check, original rows view.
+Phase B: mapping, advanced settings, event types, both file shapes, profiles and
+         browser persistence.
+Phase C: calculation and data-check engine (all rules above), with automated tests.
+Phase D: Compare screen, evidence drawer, run list, similar runs, export and print.
+Phase E: polish, mobile layout, error states, empty states, final end-to-end tests.
+
+ACCEPTANCE (clean sample)
+E-01 scrap 5%, E-02 scrap 10%, +5 percentage points; changeover 4 h vs 6 h, +2 h;
+E-02 unplanned downtime 45 min shown separately and never merged; line L1 vs L1
+passes; product "not assessed". Duplicate+missing sample: E-01 stays 50 kg / 5% with
+a duplicate warning; E-02 scrap rate shows "Can't calculate" with the reason.
+Conflict sample: conflicting scrap values block the affected metrics; downtime
+overlapping changeover shows a warning while both durations stay separate. Renamed
+columns/event words (including Arabic) loaded through a new profile must give the
+same results with no code change.
+
+Start with Phase A only.
