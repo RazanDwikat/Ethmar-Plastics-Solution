@@ -2,7 +2,7 @@ import type { ImportedFile } from './inspection';
 import type { Profile, Setup } from './setup';
 export type SavedWorkspace = {
   file:ImportedFile; sheetIndex:number|null; header:number|null|undefined; shape:'event'|'run'|null;
-  screen:'upload'|'sheets'|'check'|'mapping'|'done'; setup:Setup|null; savedAt:string;
+  screen:'upload'|'sheets'|'check'|'mapping'|'done'|'compare'; setup:Setup|null; confirmed?:boolean; savedAt:string;
 };
 export type LocalData = { workspace:SavedWorkspace|null; profiles:Profile[] };
 const DB='ethmar-private-workspace', STORE='data';

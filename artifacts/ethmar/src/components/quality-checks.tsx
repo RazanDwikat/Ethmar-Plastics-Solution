@@ -1,0 +1,8 @@
+import { Check, Info } from 'lucide-react';
+import type { CalculationReport } from '@/lib/calculation-engine';
+import { EvidenceRows, Health, Issues } from './calculation-checks';
+
+export function QualityChecks({report,error,onRetry,onEdit}:{report:CalculationReport|null;error:string;onRetry:()=>void;onEdit:()=>void}){
+ if(!report)return <section className="panel"><h2>Data quality checks</h2><p role={error?'alert':'status'}>{error||'Check your confirmed setup against the original records.'}</p><div className="row"><button onClick={onRetry}>Retry checks</button><button onClick={onEdit}>Edit setup</button></div></section>;
+ return <div className="quality-grid"><section className="panel"><h2>Data quality checks</h2><p>These notes identify records to review. Go to Compare for production results and differences. Confirming your setup never repairs or removes original data.</p><h3>File-wide issues</h3>{report.issues.length?<Issues issues={report.issues} report={report}/>:<p className="row"><Check/>No file-wide calculation issues found.</p>}<EvidenceRows entries={report.excluded} title="Excluded rows and reasons" report={report}/></section>{report.runs.map(run=><details key={run.id} className="panel"><summary>{run.id} · <Health state={run.health}/></summary>{run.issues.length?<Issues issues={run.issues} report={report}/>:<p className="row"><Check/>No run data issues found.</p>}</details>)}{!report.runs.length&&<div className="file-note"><Info/>No runs could be identified. Review grouping and the excluded rows.</div>}<button onClick={onEdit}>Edit setup</button></div>;
+}

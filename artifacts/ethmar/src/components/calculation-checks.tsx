@@ -2,17 +2,17 @@ import { useState } from 'react';
 import { Check, Info, TriangleAlert } from 'lucide-react';
 import { formatCalculated, type CalculationReport, type CalculatedValue, type DataIssue, type EvidenceRow } from '@/lib/calculation-engine';
 
-function Health({state}:{state:'clear'|'note'|'missing'}) {
+export function Health({state}:{state:'clear'|'note'|'missing'}) {
  return <span className={`tag ${state}`} data-testid={`health-${state}`}>{state==='clear'?<Check/>:state==='note'?<Info/>:<TriangleAlert/>}{state==='clear'?'Clear':state==='note'?'Note':'Missing'}</span>;
 }
 
-function EvidenceRows({entries,title,report}:{entries:EvidenceRow[];title:string;report:CalculationReport}) {
+export function EvidenceRows({entries,title,report}:{entries:EvidenceRow[];title:string;report:CalculationReport}) {
  const [page,setPage]=useState(0);
  const pages=Math.max(1,Math.ceil(entries.length/15)),current=Math.min(page,pages-1);
  return <details className="evidence-rows"><summary>{title} · {entries.length} rows</summary>{entries.length?<><p>{report.source.name} · {report.source.sheets[report.sheetIndex].name}. All original columns are retained. Physical line ranges and cell addresses are unchanged.</p><div className="scroll" tabIndex={0} aria-label={`${title}, original values`}><table><thead><tr><th scope="col">{report.source.kind==='csv'?'Physical lines':'Excel row'}</th><th scope="col">Reason / calculation</th><th scope="col">Original cells · address and value</th></tr></thead><tbody>{entries.slice(current*15,(current+1)*15).map(({row,reason},i)=><tr key={`${row.line}-${i}`}><th scope="row">{row.line}{row.endLine&&row.endLine!==row.line?`–${row.endLine}`:''}</th><td className="evidence-reason">{reason}</td><td>{row.cells.map((cell,j)=><div key={j} className="proof-cell"><strong>{cell.address}</strong><div className="raw-value" dir="auto">{cell.raw===null?<span className="muted">Empty cell</span>:cell.raw===''?<span className="muted">Empty string</span>:String(cell.raw)}</div>{cell.date&&<small>Interpreted date: {cell.date}</small>}{cell.formula!==undefined&&<><small className="raw-value">Formula: {cell.formula}</small><small>{cell.raw===null?'No cached value available.':'Original value above is cached; it may be out of date.'}</small></>}</div>)}</td></tr>)}</tbody></table></div><div className="row between pagination"><span>Page {current+1} of {pages}</span><div className="row"><button disabled={!current} onClick={()=>setPage(current-1)}>Previous rows</button><button disabled={current===pages-1} onClick={()=>setPage(current+1)}>Next rows</button></div></div></>:<p>No rows in this category.</p>}</details>;
 }
 
-function Issues({issues,report}:{issues:DataIssue[];report:CalculationReport}) {
+export function Issues({issues,report}:{issues:DataIssue[];report:CalculationReport}) {
  return <>{issues.map((issue,i)=><div className={`check-issue ${issue.level}`} key={`${issue.code}-${i}`}><div className="row"><Health state={issue.level}/><strong>{issue.message}</strong></div>{issue.lines.length>0&&<EvidenceRows title="See problem rows" report={report} entries={report.source.sheets[report.sheetIndex].rows.filter(row=>issue.lines.includes(row.line)).map(row=>({row,reason:issue.message}))}/>}</div>)}</>;
 }
 

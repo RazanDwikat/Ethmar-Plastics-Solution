@@ -68,3 +68,9 @@ File inspection precedes mapping and must preserve original rows and line number
 **Why:** The user requested explicit file-quality review before mapping and support for different timing representations.
 
 **How to apply:** Do not imply CSV can prove merged spreadsheet cells; flag suspicious headings instead. Duration-only records cannot establish time overlap.
+
+Setup is the analyst's preparation workflow, not a results dashboard. Confirmed setup ends with “Go to Compare”; run results and differences belong to Compare · manager. Keep detailed quality checks reachable without removing features.
+
+**Why:** The user explicitly objected to Phase C's results being displayed under Setup instead of Compare.
+
+**How to apply:** Preserve this separation even when adding new calculations. An edit to interpretation requires renewed confirmation before manager results are shown.
