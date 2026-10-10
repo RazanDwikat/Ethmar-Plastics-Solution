@@ -1,0 +1,45 @@
+STAGE 2: Calculations and data checks (real, on the imported data)
+- Group rows into runs by the mapped run ID (or order ID).
+- Templates: Ratio, Duration, Total, plus Difference, Count, Rate per hour, Average,
+  each with a live example result. Default "Scrap rate" = Scrap / Material input.
+- Data checks with CSV line references: identical duplicate (count once, show both
+  rows, flag), same ID with conflicting values (block only the affected metrics, show
+  all rows), missing required event or value, zero denominator, invalid quantities or
+  timestamps, material balance (good + scrap vs input, tolerance setting), overlapping
+  changeover/downtime time ranges (warn, keep both durations as recorded).
+- Per-run results screen with data-health badges, "Blocked metric is not a blocked
+  run".
+
+STAGE 3: Comparison, evidence, export
+- Run list (search, filters, sorting) and picking Baseline and Compared run; similar
+  runs by transparent rules (same line/mold/machine, input within tolerance, custom
+  comparison attributes) with "not assessed" when a column is unmapped.
+- Plain-language answer sentence, metric cards and full table; difference = Compared
+  minus Baseline; percentage points for rate differences.
+- Evidence drawer for every number and every difference: formula with actual values,
+  source rows with line numbers and original values (for "one row per run" files,
+  highlight the exact cell), excluded rows with reasons, mapping used.
+- Export comparison CSV and printable page including warnings, units and evidence.
+
+ACCEPTANCE TESTS (add as automated tests, using the 5 attached files)
+1. demo_1_clean: E-01 scrap 5%, changeover 4 h; E-02 scrap 10%, changeover 6 h,
+   downtime 45 min shown separately; difference +5 percentage points and +2 h; no
+   data warnings; "compare with care" because molds differ; product "not assessed".
+2. demo_2_issues: E-01 duplicate EV-003 counted once (scrap 50 kg, 5%) with a
+   duplicate warning; E-02 has no material input, so input and scrap rate show
+   "Cannot calculate" while scrap quantity (100 kg), changeover (6 h) and downtime
+   (45 min) still show.
+3. demo_3_stress_test: E-03 scrap quantity and scrap rate blocked (EV-103 has 60 and
+   80); E-03 downtime 10:30-11:15 overlaps changeover 08:00-11:00: warning, with 3 h
+   and 45 min both still shown; E-04 scrap rate 7% and a material balance warning
+   (920 + 70 = 990, not 1000), changeover 5 h.
+4. demo_4_cake_per_run ("one row per run"): C-01 5% / 40 min; C-02 10% / 65 min with a
+   duplicate warning (identical repeated row counted once); C-03 5% / 30 min, oven O2
+   and input 800 kg, so comparing it with C-01 shows "compare with care".
+5. demo_5_messy_file: file check reports the title row, blank row, repeated header at
+   line 8, TOTAL row at line 12, the different date format at line 7 and the text
+   number "1,000" at line 4, without changing any of them.
+6. Rename test: take demo_1, rename columns and event values (including Arabic names)
+   in a copy, create a new profile through the UI only, and still get 5% vs 10%.
+
+Start with Stage 1 only.
