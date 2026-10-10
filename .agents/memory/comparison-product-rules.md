@@ -15,15 +15,15 @@ Identical repetitions of an event ID within an import count once with visible ex
 
 **How to apply:** Never merge or adjust changeover and unplanned downtime automatically. Any two runs remain comparable; missing comparison attributes are “not assessed.” Explanations cannot claim causation.
 
-The clean demo must show E-01/E-02 scrap rates of 5%/10%, a 5-percentage-point difference, changeover of 4h/6h with a 2h difference, and E-02 unplanned downtime of 45min separately. Both runs have line L1; product stays unmapped. The real-app acceptance brief supersedes the old prototype: clean molds differ, stress runs are E-03/E-04, and cake cleaning durations are 40/65/30 minutes.
+The clean demo must show E-01/E-02 scrap rates of 5%/10%, a 5-percentage-point difference, changeover of 4h/6h with a 2h difference, and E-02 unplanned downtime of 45min separately. Both runs have line L1; product stays unmapped.
 
 **Why:** These are the user's explicit acceptance case and missing-attribute demonstration.
 
 **How to apply:** Group runs by the mapped run ID, or order ID when chosen during mapping if no run column is mapped. Include a second demo with one duplicate and one missing row.
 
-The approved unified design has Setup for analysts and Compare for managers. The user now requests a real browser-only app in three approval-gated stages: (1) import, file review, mapping and saving; (2) calculations/data checks; (3) comparison/evidence/export. Stop after each stage and explain testing; wait for approval before the next.
+The user requested design-only work first, initially approving each phase separately. They now request merging the three approved prototypes into one experience with Setup for analysts and Compare for managers, without removing features. Stop after showing the redesign and explaining how to test.
 
-**Why:** The user approved the unified visual reference and explicitly requested real processing while preserving stage approval gates.
+**Why:** The user explicitly replaced the separate-phase navigation with a simpler unified experience for nontechnical users.
 
 **How to apply:** Keep all mapping, data checks, and comparison/evidence capabilities in the unified flow. Setup has upload, file check, confirm columns and done; advanced controls are collapsed. Use plain language, minimum 14px text, one primary button per screen, and icon-plus-text statuses. The clean demo's 45-minute downtime must be outside changeover. Demo 2 duplicates E-01 scrap and omits E-02 material input; demo 3 includes a conflicting event ID with a different quantity and downtime overlapping changeover. Summarize which run had more waste, whether its mold change was longer, and its separate downtime using clear units such as 6 h and 45 min.
 
@@ -56,9 +56,3 @@ File inspection precedes mapping and must preserve original rows and line number
 **Why:** The user requested explicit file-quality review before mapping and support for different timing representations.
 
 **How to apply:** Do not imply CSV can prove merged spreadsheet cells; flag suspicious headings instead. Duration-only records cannot establish time overlap.
-
-Excel imports must preserve displayed cell text and original workbook bytes, including worksheet/row/cell locations. Never fill merged ranges or recalculate formulas during import; missing cached formula values require an actionable explanation.
-
-**Why:** The user explicitly requires displayed dates, leading zeros and formatted quantities to remain unchanged. They will upload their own CSV/XLSX files; missing sample attachments are not a blocker.
-
-**How to apply:** Keep format-specific evidence distinct: CSV physical lines versus Excel worksheet cells. Sheet changes must disclose reset effects and preserve previously saved setups. Stage 1 verifies source fidelity; numeric acceptance results belong to later approved stages.
