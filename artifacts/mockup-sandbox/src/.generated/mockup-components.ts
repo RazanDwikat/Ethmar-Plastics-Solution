@@ -4,5 +4,6 @@ export const modules: ModuleMap = {
   "./components/mockups/ethmar/PhaseOne.tsx": () => import("../components/mockups/ethmar/PhaseOne.tsx"),
   "./components/mockups/ethmar/PhaseThree.tsx": () => import("../components/mockups/ethmar/PhaseThree.tsx"),
   "./components/mockups/ethmar/PhaseTwo.tsx": () => import("../components/mockups/ethmar/PhaseTwo.tsx"),
-  "./components/mockups/ethmar/RunList.tsx": () => import("../components/mockups/ethmar/RunList.tsx")
+  "./components/mockups/ethmar/RunList.tsx": () => import("../components/mockups/ethmar/RunList.tsx"),
+  "./components/mockups/ethmar/Unified.tsx": () => import("../components/mockups/ethmar/Unified.tsx")
 };
