@@ -1,5 +1,6 @@
 import { formatCalculated, type CalculatedRun, type CalculatedValue, type CalculationReport, type DataIssue } from '@/lib/calculation-engine';
 import type { EvidenceRow } from '@/lib/calculation-engine';
+import {measurementDependencies} from '@/lib/custom-formula';
 
 export function usedCellAddresses(entries:EvidenceRow[],expressions:string){
  return [...new Set(entries.flatMap(e=>e.row.cells.filter(c=>expressions.includes(`[${c.address}]`)).map(c=>c.address)))];
@@ -7,7 +8,7 @@ export function usedCellAddresses(entries:EvidenceRow[],expressions:string){
 export function operandExpressions(value:CalculatedValue,report:CalculationReport){
  const run=report.runs.find(r=>r.metrics.includes(value)||r.measures.includes(value));
  const metric=run?.metrics.includes(value)?report.setup.measurements.find(m=>m.id===value.id):undefined;
- const ids=metric?[metric.a,...(['Ratio','Difference','Rate per hour'].includes(metric.template)?[metric.b]:[])]:[];
+ const ids=metric?measurementDependencies(metric,report.setup).filter(d=>!d.countOnly).map(d=>d.id):[];
  const operands=metric?.template==='Count'?[]:run?.measures.filter(v=>ids.includes(v.id))??[];
  return [value,...operands].flatMap(v=>[v.evidence.formula,...v.evidence.used.map(e=>e.reason)]).join(' ');
 }

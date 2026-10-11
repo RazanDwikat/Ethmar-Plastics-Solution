@@ -1,5 +1,6 @@
 import { normalizeHeader, type Inspection, type ParseOptions } from './inspection';
 import type { PreparationRecipe } from './preparation-types';
+import {formulaProblems,type FormulaBinding} from './custom-formula';
 
 export const roles = [
   ['runId','Run ID'], ['orderId','Order ID'], ['eventId','Event ID'], ['eventType','Event type'],
@@ -13,8 +14,10 @@ export type EventDefinition = {
   timing:'range'|'duration'; column:number|null; startColumn:number|null; endColumn:number|null; durationColumn:number|null;
   durationUnit:'hours'|'minutes'|'seconds';
 };
-export const templates = ['Ratio','Duration','Total','Difference','Count','Rate per hour','Average'] as const;
-export type Measurement = { id:string; label:string; template:typeof templates[number]; a:string; b:string; exampleA:number; exampleB:number; required?:boolean };
+export const templates = ['Ratio','Duration','Total','Difference','Count','Rate per hour','Average','Custom formula'] as const;
+export type Measurement = { id:string; label:string; template:typeof templates[number]; a:string; b:string; exampleA:number; exampleB:number; required?:boolean;
+ formula?:string;formulaBindings?:Record<string,FormulaBinding>;formulaExamples?:Record<string,number>;
+ outputUnit?:'percent'|'quantity'|'hours'|'minutes'|'number';decimals?:number;headline?:boolean };
 /** Legacy built-in identity, not the editable display name. Explicit false is preserved. */
 export const isMeasurementRequired=(m:Measurement)=>m.required??m.id==='scrap-rate';
 export function normalizeRequirements(setup:Setup):Setup{
@@ -78,6 +81,7 @@ export function exampleResult(m:Measurement):string {
   if(!Number.isFinite(a)||!Number.isFinite(b))return 'Enter valid example numbers.';
   const n=(v:number)=>Number(v.toFixed(4)).toLocaleString('en-US');
   switch(m.template){
+    case 'Custom formula':return 'Use the formula builder preview.';
     case 'Ratio':return b===0?'Cannot divide by zero.':`${n(a)} ÷ ${n(b)} × 100 = ${n(a/b*100)}%`;
     case 'Duration':return `${n(a)} hours + ${n(b)} hours = ${n(a+b)} hours`;
     case 'Total':return `${n(a)} + ${n(b)} = ${n(a+b)}`;
@@ -123,11 +127,13 @@ export function setupProblems(s:Setup, headers:string[]):{errors:string[];notes:
   const ids=new Set(s.events.map(e=>e.id));
   for(const m of s.measurements){
     if(!m.label.trim())errors.push('Every measurement needs a display name.');
+    if(m.template==='Custom formula')continue;
     if(!ids.has(m.a))errors.push(`“${m.label}” needs a valid source activity or measure.`);
     if(['Ratio','Difference','Rate per hour'].includes(m.template)&&!ids.has(m.b))errors.push(`“${m.label}” needs a second source activity or measure.`);
     if(m.template==='Duration'&&s.events.find(e=>e.id===m.a)?.kind!=='timed')errors.push(`“${m.label}” needs a timed source for Duration.`);
     if(m.template==='Rate per hour'&&s.events.find(e=>e.id===m.b)?.kind!=='timed')errors.push(`“${m.label}” needs a timed second source for Rate per hour.`);
   }
+  errors.push(...formulaProblems(s));
   return {errors:[...new Set(errors)],notes:[...new Set(notes)]};
 }
 export function applyProfile(profile:Profile, headers:string[]):{setup:Setup;notes:string[]} {

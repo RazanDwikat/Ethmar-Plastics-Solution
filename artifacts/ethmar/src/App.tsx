@@ -10,7 +10,7 @@ import { CompareDrawer } from '@/components/compare-drawer';
 import { ManagerWorkspace } from '@/components/manager-workspace';
 import { QualityChecks } from '@/components/quality-checks';
 import { calculateFile, type CalculationReport } from '@/lib/calculation-engine';
-import { defaultSetup, applyProfile, type Setup, type Profile } from '@/lib/setup';
+import { defaultSetup, applyProfile, setupProblems, type Setup, type Profile } from '@/lib/setup';
 import { prepareFile } from '@/lib/preparation';
 import type { PreparationRecipe } from '@/lib/preparation-types';
 import { PrepareData } from '@/components/prepare-data';
@@ -113,6 +113,8 @@ function Workspace(){
  function goCompare(){if(!confirmed)return;setRole('preview');setNotice('');}
  async function saveConfirmed(exportFile=false):Promise<boolean>{
   if(!setup||!inspection||!file||!sheet)return false;
+  const errors=setupProblems(setup,inspection.headers).errors;
+  if(errors.length){setNotice(`Setup not saved: ${errors.join(' ')}`);return false;}
   const name=prompt('Name this saved setup',activeProfile?.name??`${sheet.name} production setup`)?.trim();
   if(!name){setNotice('A setup name is required. Nothing was saved.');return false;}
   const same=profiles.find(p=>p.name===name);

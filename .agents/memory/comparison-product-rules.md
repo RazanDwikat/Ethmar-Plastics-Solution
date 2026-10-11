@@ -13,7 +13,7 @@ Analysts may explicitly prepare a derived table using guided header selection, r
 
 **Why:** The user chose the simplest options that meet a checkable, generic factory-comparison brief.
 
-**How to apply:** Preserve imported values and source line references. Evidence must include the formula with actual values, interpreting mapping, included rows, and excluded rows with reasons. Generic ratio, duration, and total templates are allowed; a free-form formula language is not.
+**How to apply:** Preserve imported values and source line references. Evidence must include the formula with actual values, interpreting mapping, included rows, and excluded rows with reasons. The later Custom formula request permits guided arithmetic on per-run totals, not arbitrary code or a row-by-row formula language.
 
 The real application must parse CSV and Excel entirely in the browser: no file data may be uploaded to a server. Browser persistence uses IndexedDB only when its phase is approved. Keep the approved design and implement one approved phase at a time: A file inspection, B mapping/settings/profiles/persistence, C calculation checks, D comparison/evidence/export, E final polish/tests.
 
@@ -112,3 +112,9 @@ Open printable reports separately and require an explicit print action, rather t
 **Why:** Automatic native printing interrupted the main browser journey. A separate report keeps Setup and Compare available and gives the user control over when to print.
 
 **How to apply:** Retain warnings and evidence in the report, with an equivalent local HTML download when popups are blocked.
+
+Custom formula is a guided eighth template: arithmetic over per-run quantity/duration totals, counts and other measurements, with no functions, conditions, code execution or row-by-row calculations. Missing any part makes the whole result unavailable. Keep changeover and downtime separate as source measurements, even when an analyst explicitly combines them.
+
+**Why:** The user extended the original template-only scope while requiring safe parsing, full evidence and overlap warnings.
+
+**How to apply:** Keep references tied to source identities through renaming; validate cycles and missing sources before saving reusable setups. Required checks follow transitive dependencies. Time inputs are hours; output units label the arithmetic without implicit conversions, so the builder explains explicit `* 60` or `* 100`. Round display only, never intermediate calculations.

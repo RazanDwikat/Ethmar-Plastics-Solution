@@ -3,6 +3,7 @@ import { setupProblems, type Setup, type Measurement } from './setup';
 import { formatCalculated, numberText, quantity, timestamp, timestampZone } from './calculation-values';
 import type { CalculationReport, CalculatedRun, CalculatedValue, DataIssue, Evidence, EvidenceRow, CalculationAvailability } from './calculation-types';
 import { prepareFile } from './preparation';
+import {calculateCustomFormula} from './custom-formula-calculation';
 export { formatCalculated } from './calculation-values';
 export type * from './calculation-types';
 
@@ -221,7 +222,17 @@ export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,he
     if(setup.events.filter(e=>e.kind==='timed').some(e=>e.timing==='duration'))
       add(runIssues,'overlap-not-assessed','note','Time overlap cannot be assessed for duration-only measures because their start and end times are not recorded.',[]);
     checkBalance(results,setup,runIssues);
-    const metrics=setup.measurements.map(m=>calculateMetric(m,results,mapping,runIssues));
+    const calculated=new Map<string,CalculatedValue>();
+    const metric=(m:Measurement):CalculatedValue=>{
+      const cached=calculated.get(m.id);if(cached)return cached;
+      const value=m.template==='Custom formula'?calculateCustomFormula(m,setup,mapping,ref=>{
+        if(ref.kind==='measurement')return metric(setup.measurements.find(x=>x.id===ref.id)!);
+        if(ref.kind==='total')return results.get(ref.id)!.measure;
+        return calculateMetric({...m,id:`count:${ref.id}`,label:`${setup.events.find(e=>e.id===ref.id)!.label} count`,template:'Count',a:ref.id,b:''},results,mapping,runIssues);
+      }):calculateMetric(m,results,mapping,runIssues);
+      calculated.set(m.id,value);return value;
+    };
+    const metrics=setup.measurements.map(metric);
     for(const metric of metrics)if(metric.state==='unavailable'&&!runIssues.some(i=>i.message===metric.reason))
       add(runIssues,'unavailable-metric','missing',`${metric.label}: ${metric.reason}`,metric.evidence.used.map(r=>r.row));
     // Reflect run warnings in each affected number's evidence without hiding unrelated results.

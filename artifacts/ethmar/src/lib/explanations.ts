@@ -1,13 +1,13 @@
 import type { AttributeCheck, CalculationReport, CalculatedRun, CalculatedValue, DataIssue } from './calculation-types';
 import type { Setup } from './setup';
+import {measurementDependencies} from './custom-formula';
 
 export function affectedLabels(issue:DataIssue,setup:Setup):string[]{
  if(issue.code==='missing-context')return ['comparison attributes and identity checks only'];
  const ids=new Set(issue.definitionIds);
  if(!ids.size)return [...setup.events.map(e=>e.label),...setup.measurements.map(m=>m.label)];
- return [...new Set([...setup.events.filter(e=>ids.has(e.id)).map(e=>e.label),...setup.measurements.filter(m=>ids.has(m.id)||ids.has(m.a)||(usesSecondOperand(m.template)&&ids.has(m.b))).map(m=>m.label)])];
+ return [...new Set([...setup.events.filter(e=>ids.has(e.id)).map(e=>e.label),...setup.measurements.filter(m=>ids.has(m.id)||measurementDependencies(m,setup).some(d=>ids.has(d.id))).map(m=>m.label)])];
 }
-const usesSecondOperand=(template:string)=>['Ratio','Difference','Rate per hour'].includes(template);
 const phrase=(text:string)=>text.trim().replace(/\.\s+/g,'; ').replace(/[.!?]+$/,'');
 export function issueExplanation(issue:DataIssue,report:CalculationReport):string{
  const labels=affectedLabels(issue,report.setup);
@@ -18,7 +18,7 @@ export function healthExplanation(issues:DataIssue[],report:CalculationReport,sc
 }
 export function valueIssues(value:CalculatedValue,report:CalculationReport,run?:CalculatedRun):DataIssue[]{
  const metric=report.setup.measurements.find(m=>m.id===value.id);
- const ids=new Set([value.id,metric?.a,...(metric&&usesSecondOperand(metric.template)?[metric.b]:[])]);
+ const ids=new Set([value.id,...(metric?measurementDependencies(metric,report.setup).map(d=>d.id):[])]);
  return [...new Map([...report.issues,...(run?.issues??[])].filter(i=>!i.definitionIds.length||i.definitionIds.some(id=>ids.has(id))).map(i=>[JSON.stringify(i),i])).values()];
 }
 export function valueExplanation(value:CalculatedValue,report:CalculationReport,run?:CalculatedRun):string{

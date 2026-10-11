@@ -6,10 +6,12 @@ export type EvidenceRow = { row:SourceRow; reason:string };
 /** Manager-file availability only; never written into a saved analyst setup. */
 export type CalculationAvailability = {definitions:Record<string,string[]>; issues:DataIssue[]};
 export type Evidence = {
+  parts?:{name:string;value:number|null;unit:string;reason:string;formula:string}[];
   formula:string; used:EvidenceRow[]; excluded:EvidenceRow[]; notes:string[];
   mapping:{ setup:Setup; headers:string[]; decimal:'.'|','; sheet:string; file:string };
 };
 export type CalculatedValue = {
+  decimals?:number;
   id:string; label:string; value:number|null; unit:string;
   state:'available'|'not-logged'|'unavailable'; reason:string; evidence:Evidence;
 };

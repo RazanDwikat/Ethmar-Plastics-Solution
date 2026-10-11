@@ -23,13 +23,16 @@ export function CompareManager({report,onDetails,onEdit}:{report:CalculationRepo
   const missing=[{run:a!,value:av},{run:b!,value:bv}].filter(o=>o.value?.state==='not-logged');
   const result=av.value!==null&&bv?.value!==null&&bv?.value!==undefined&&av.unit===bv.unit?bv.value-av.value:null;
   const reason=av.value===null?av.reason:!bv?'Missing compared value':bv.value===null?bv.reason:av.unit!==bv.unit?'Units differ':'Compared run minus baseline run.';
-  const text=missing.length?(compact?'No comparison':`No comparison: ${missing.map(o=>o.run.id).join(' and ')} ${missing.length>1?'have':'has'} ${report.setup.measurements.find(m=>m.id===av.id)?.a==='downtime'||av.id==='downtime'?'no stop recorded':'no record'}`):result===null?"Can't calculate":`${result>0?'+':''}${formatCalculated({value:result,unit:av.unit==='%'?'percentage points':av.unit,state:'available'})}`;
+  const text=missing.length?(compact?'No comparison':`No comparison: ${missing.map(o=>o.run.id).join(' and ')} ${missing.length>1?'have':'has'} ${report.setup.measurements.find(m=>m.id===av.id)?.a==='downtime'||av.id==='downtime'?'no stop recorded':'no record'}`):result===null?"Can't calculate":`${result>0?'+':''}${formatCalculated({value:result,unit:av.unit==='%'?'percentage points':av.unit,state:'available',decimals:av.decimals})}`;
   const explanation=`Difference · ${av.label}: ${reason} ${a!.id}: ${valueExplanation(av,report,a)} ${bv?`${b!.id}: ${valueExplanation(bv,report,b)}`:`${b!.id}: no compared value exists for ${av.label}.`} Affected number: difference in ${av.label}.`;
   return <><ExplanationTooltip interactive text={`${explanation} Tap again to see evidence.`}><button className={`value-link ${missing.length?'neutral-value':''}`} aria-label={`${text}. See difference evidence; on touch tap once for explanation, again for evidence.`} onClick={()=>setEvidence({title:`Difference · ${av.label}`,operands:[{run:a!,value:av},...(bv?[{run:b!,value:bv}]:[])],difference:{text,reason:explanation}})}>{text}</button></ExplanationTooltip>{result===null&&!missing.length&&<small>{reason}</small>}</>;
  };
  const preferred=['scrap','changeover','downtime','good'].flatMap(source=>{const metric=report.setup.measurements.find(m=>m.a===source&&(source!=='scrap'||m.template==='Ratio'));return metric?[metric.id]:[]});
  const values=a?comparisonValues(a,report):[];
- const keys=a?[...new Set([...preferred,...a.metrics.map(m=>m.id)])].slice(0,4).map(id=>a.metrics.find(m=>m.id===id)).filter((v):v is CalculatedValue=>!!v):[];
+ const headlineIds=report.setup.measurements.some(m=>m.headline!==undefined)
+  ?report.setup.measurements.filter(m=>m.headline??preferred.includes(m.id)).map(m=>m.id)
+  :[...new Set([...preferred,...(a?.metrics.map(m=>m.id)??[])])].slice(0,4);
+ const keys=a?headlineIds.map(id=>a.metrics.find(m=>m.id===id)).filter((v):v is CalculatedValue=>!!v):[];
  const issues=[...new Map(visibleIssues([...report.issues,...(a?.issues??[]),...(b?.issues??[])]).map(i=>[JSON.stringify(i),i])).values()];
  const exclusions=[...new Map([...report.excluded,...[a,b].flatMap(r=>r?r.measures.flatMap(m=>m.evidence.excluded):[])].map(e=>[e.row.line,e])).values()];
  const counterpart=(run:CalculatedRun,value:CalculatedValue)=>a?.metrics.includes(value)?run.metrics.find(v=>v.id===value.id):run.measures.find(v=>v.id===value.id);

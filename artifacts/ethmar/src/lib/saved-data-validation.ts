@@ -4,13 +4,21 @@ const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object';
 const list=(v:unknown,test:(item:unknown)=>boolean):boolean=>Array.isArray(v)&&v.every(test);
 const text=(v:unknown):v is string=>typeof v==='string';
 const column=(v:unknown)=>v===null||(typeof v==='number'&&Number.isInteger(v)&&v>=-1);
+function formulaFields(m:Record<string,unknown>){
+ return (m.formula===undefined||text(m.formula))
+ &&(m.headline===undefined||typeof m.headline==='boolean')
+ &&(m.decimals===undefined||(typeof m.decimals==='number'&&Number.isInteger(m.decimals)&&m.decimals>=0&&m.decimals<=6))
+ &&(m.outputUnit===undefined||['percent','quantity','hours','minutes','number'].includes(String(m.outputUnit)))
+ &&(m.formulaExamples===undefined||(object(m.formulaExamples)&&Object.values(m.formulaExamples).every(v=>typeof v==='number')))
+ &&(m.formulaBindings===undefined||(object(m.formulaBindings)&&Object.values(m.formulaBindings).every(b=>object(b)&&['total','count','measurement'].includes(String(b.kind))&&text(b.id))));
+}
 function setup(v:unknown):boolean{
   if(!object(v)||v.version!==1||!['event','run'].includes(String(v.shape))||!object(v.mapping)||!object(v.synonyms))return false;
   const mapping=v.mapping,synonyms=v.synonyms;
   return roles.every(([r])=>column(mapping[r])&&list(synonyms[r],text))
     &&['runId','orderId'].includes(String(v.groupBy))&&text(v.unit)&&typeof v.tolerance==='number'&&typeof v.checkBalance==='boolean'
     &&list(v.events,e=>object(e)&&text(e.id)&&text(e.label)&&list(e.values,text)&&['quantity','timed'].includes(String(e.kind))&&['range','duration'].includes(String(e.timing))&&['hours','minutes','seconds'].includes(String(e.durationUnit))&&['column','startColumn','endColumn','durationColumn'].every(k=>column(e[k])))
-    &&list(v.measurements,m=>object(m)&&text(m.id)&&text(m.label)&&templates.some(t=>t===m.template)&&text(m.a)&&text(m.b)&&typeof m.exampleA==='number'&&typeof m.exampleB==='number'&&(m.required===undefined||typeof m.required==='boolean'))
+    &&list(v.measurements,m=>object(m)&&text(m.id)&&text(m.label)&&templates.some(t=>t===m.template)&&text(m.a)&&text(m.b)&&typeof m.exampleA==='number'&&typeof m.exampleB==='number'&&(m.required===undefined||typeof m.required==='boolean')&&formulaFields(m))
     &&(v.preparation===undefined||validatePreparationRecipe(v.preparation))
     &&list(v.customFields,f=>object(f)&&text(f.id)&&text(f.label)&&typeof f.column==='number'&&column(f.column)&&typeof f.compare==='boolean');
 }

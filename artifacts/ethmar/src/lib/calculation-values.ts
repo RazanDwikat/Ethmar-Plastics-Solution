@@ -2,8 +2,12 @@ import { numberValue, type Cell } from './inspection';
 import type { CalculatedValue } from './calculation-types';
 
 export const numberText=(n:number)=>new Intl.NumberFormat('en-US',{maximumSignificantDigits:15}).format(n);
-export function formatCalculated(v:Pick<CalculatedValue,'value'|'unit'|'state'>):string {
+export function formatCalculated(v:Pick<CalculatedValue,'value'|'unit'|'state'|'decimals'>):string {
   if(v.value===null)return v.state==='not-logged'?'Not logged':"Can't calculate";
+  if(v.decimals!==undefined){
+    const n=v.value.toLocaleString('en-US',{minimumFractionDigits:v.decimals,maximumFractionDigits:v.decimals});
+    return `${n}${v.unit==='%'?'%':v.unit?` ${v.unit==='hours'?'h':v.unit==='minutes'?'min':v.unit}`:''}`;
+  }
   if(v.unit==='hours'){
     const sign=v.value<0?'−':'';
     const seconds=Math.abs(v.value)*3600;

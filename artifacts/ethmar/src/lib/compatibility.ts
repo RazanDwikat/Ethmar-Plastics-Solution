@@ -4,7 +4,8 @@ import { quantity, timestamp, timestampZone } from './calculation-values';
 import { calculateFile, type CalculationReport, type EvidenceRow, type CalculationAvailability } from './calculation-engine';
 import { detectRowShape } from './row-shape';
 import { prepareFile } from './preparation';
-import {definitionColumns,measurementSources,similarHeaders} from './measurement-requirements';
+import {definitionColumns,similarHeaders} from './measurement-requirements';
+import {measurementDependencies} from './custom-formula';
 
 export type CompatibilityResult = {
  preparedFile?:ImportedFile; availability?:CalculationAvailability;
@@ -80,9 +81,9 @@ export function checkCompatibility(file:ImportedFile,sheetIndex:number,profile:P
   if(all.length)availability.definitions[original.id]=all;
  }
  for(const m of setup.measurements){
-  const reasons=measurementSources(m).flatMap(id=>[
+  const reasons=measurementDependencies(m,setup).flatMap(({id,countOnly})=>[
    ...(eventMissing.has(id)?[eventMissing.get(id)!]:[]),
-   ...(m.template==='Count'?[]:columnMissing.get(id)??[])
+   ...(countOnly?[]:columnMissing.get(id)??[])
   ]);
   if(!reasons.length)continue;
   const message=`${isMeasurementRequired(m)?'Required':'Optional'} measurement “${m.label}” cannot be calculated for any run: ${[...new Set(reasons)].join(' ')}`;

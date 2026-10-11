@@ -60,7 +60,7 @@ function exportRows(report:CalculationReport,a:CalculatedRun,b:CalculatedRun):st
     const value=av.value!==null&&bv?.value!==null&&bv?.value!==undefined&&av.unit===bv.unit?bv.value-av.value:null;
     const unit=av.unit==='%'?'percentage points':av.unit;
     const reason=value===null?(av.value===null?av.reason:bv?.value===null?bv.reason:'The source or compatible unit is unavailable.'):'';
-    rows.push([av.label,formatCalculated(av),bv?formatCalculated(bv):'Not configured',formatCalculated({value,unit,state:'unavailable'}),unit,reason,refs(av),bv?refs(bv):'']);
+    rows.push([av.label,formatCalculated(av),bv?formatCalculated(bv):'Not configured',formatCalculated({value,unit,state:'unavailable',decimals:av.decimals}),unit,reason,refs(av),bv?refs(bv):'']);
   }
   rows.push(['Comparability','State','Baseline','Compared','Explanation']);
   for(const c of compareCalculatedRuns(a,b,report.setup).checks)rows.push([c.label,c.state,c.baseline,c.compared,c.reason]);
@@ -72,6 +72,7 @@ function exportRows(report:CalculationReport,a:CalculatedRun,b:CalculatedRun):st
     for(const f of report.setup.customFields)rows.push(['Custom context',r.id,f.label,f.compare?'Evidence and comparison':'Evidence only',fields[`custom:${f.id}`]||'Not assessed']);
     for(const v of allValues(r)){
       rows.push(['Formula',r.id,v.label,v.evidence.formula]);
+      for(const part of v.evidence.parts??[])rows.push(['Formula part',r.id,v.label,part.name,part.value===null?'Unavailable':String(part.value),part.unit,part.reason,part.formula]);
       for(const note of v.evidence.notes)rows.push(['Metric note',r.id,v.label,note]);
       for(const [category,entries] of [['Used row',v.evidence.used],['Excluded row',v.evidence.excluded]] as const)
         for(const e of entries)rows.push([category,r.id,v.label,`${report.source.name} / ${report.source.sheets[report.sheetIndex].name} / lines ${e.row.line}${e.row.endLine&&e.row.endLine!==e.row.line?`–${e.row.endLine}`:''}`,e.reason,JSON.stringify(e.row.cells)]);

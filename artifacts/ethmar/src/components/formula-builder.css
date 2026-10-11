@@ -1,0 +1,12 @@
+.formula-builder { margin: 20px 0; padding: 20px; border: 1px solid #c9d7d0; border-radius: 12px; background: #f1f6f2; }
+.formula-builder .formula-heading { margin: 0 0 6px; }
+.formula-builder .formula-tools { display: flex; align-items: end; flex-wrap: wrap; gap: 8px; margin: 14px 0; }
+.formula-builder .formula-insert { flex: 1 1 250px; }
+.formula-builder .formula-constant { flex: 0 1 130px; }
+.formula-builder .formula-tools button { min-width: 40px; }
+.formula-builder textarea { min-height: 104px; font-family: ui-monospace, monospace; line-height: 1.7; }
+.formula-builder .formula-note { padding: 10px 12px; border-left: 3px solid #8b7144; background: #f7f2e6; font-size: 13px; line-height: 1.6; }
+.formula-builder .formula-preview { margin: 16px 0 0; }
+.formula-builder .formula-preview strong { overflow-wrap: anywhere; }
+.formula-builder .formula-substitution { display: block; font-family: ui-monospace, monospace; overflow-wrap: anywhere; margin: 8px 0; }
+@media (max-width: 767px) { .formula-builder { padding: 14px; } .formula-builder .generic-fields { grid-template-columns: 1fr; } }
