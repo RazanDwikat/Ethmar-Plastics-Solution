@@ -28,6 +28,7 @@ export function validateSavedData(workspace:unknown,profiles:unknown):void{
   if(!(w.sheetIndex===null||(Number.isInteger(w.sheetIndex)&&(w.sheetIndex as number)>=0&&(w.sheetIndex as number)<f.sheets.length))
     ||!(w.header===undefined||w.header===null||Number.isInteger(w.header))
     ||!(w.shape===null||['event','run'].includes(String(w.shape)))
-    ||!['upload','sheets','check','mapping','done','compare'].includes(String(w.screen))
+    ||!['upload','sheets','check','shape','mapping','done','compare'].includes(String(w.screen))
+    ||!(w.shapeConfirmed===undefined||typeof w.shapeConfirmed==='boolean')
     ||!(w.setup===null||setup(w.setup))||!(w.confirmed===undefined||typeof w.confirmed==='boolean')||!text(w.savedAt))fail();
 }

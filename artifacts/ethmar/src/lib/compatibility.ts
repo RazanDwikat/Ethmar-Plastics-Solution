@@ -2,14 +2,15 @@ import { inspectSheet, type ImportedFile } from './inspection';
 import { roles, setupProblems, type Profile, type Setup } from './setup';
 import { quantity, timestamp, timestampZone } from './calculation-values';
 import { calculateFile, type CalculationReport, type EvidenceRow } from './calculation-engine';
+import { detectRowShape } from './row-shape';
 
 export type CompatibilityResult = {
   state:'matches'|'notes'|'blocked'; differences:string[]; notes:string[];
-  excluded:EvidenceRow[]; setup:Setup; headerLine:number|null; headers:string[]; unmapped:string[];
+  excluded:EvidenceRow[]; setup:Setup; headerLine:number|null; headers:string[]; unmapped:string[]; detectedShape:'event'|'run'|null;
 };
 
 /** Match original header names exactly. Synonyms belong only to analyst preparation. */
-export function checkCompatibility(file:ImportedFile,sheetIndex:number,profile:Profile,declaredShape?:'event'|'run'):CompatibilityResult {
+export function checkCompatibility(file:ImportedFile,sheetIndex:number,profile:Profile):CompatibilityResult {
   const sheet=file.sheets[sheetIndex];
   if(!sheet)throw new Error('Choose a sheet before checking this file.');
   const inspection=inspectSheet(sheet,file.decimal,profile.headerLine);
@@ -36,9 +37,9 @@ export function checkCompatibility(file:ImportedFile,sheetIndex:number,profile:P
   const unmapped=headers.filter(h=>!requiredNames.has(h));
   const extra=headers.filter(h=>!profile.headers.includes(h));
   if(extra.length)notes.push(`Extra columns are kept unchanged as unmapped source columns: ${extra.map(h=>`“${h}”`).join(', ')}.`);
-  // A manager explicitly confirms the row shape: custom headers cannot establish it safely.
-  if(declaredShape&&declaredShape!==setup.shape)differences.push(`Different file shape: the file has one ${declaredShape} per row; this setup expects one ${setup.shape} per row.`);
-  if(!declaredShape)differences.push('Confirm whether this file contains one event per row or one run per row. No row shape has been assumed.');
+  const detectedShape=detectRowShape(sheet,inspection,profile);
+  if(detectedShape&&detectedShape!==setup.shape)differences.push(`This file looks like one row per ${detectedShape}, but your setup expects one row per ${setup.shape}.`);
+  if(!detectedShape)differences.push('The file structure could not be identified safely: activity and per-run measure columns may conflict, or there is not enough information. Ask your analyst to check this file.');
   if(profile.confirmed===false)differences.push('This setup has not been confirmed by the analyst.');
   differences.push(...setupProblems(profile.setup,profile.headers).errors);
   if(!differences.length){
@@ -78,7 +79,7 @@ export function checkCompatibility(file:ImportedFile,sheetIndex:number,profile:P
     }
     for(const [reason,lines] of groups)notes.push(`${reason} ${lines.length} ${lines.length===1?'row':'rows'} — lines ${lines.join(', ')}.`);
   }
-  return {state:differences.length?'blocked':notes.length?'notes':'matches',differences:[...new Set(differences)],notes,excluded,setup,headerLine:inspection.headerLine,headers,unmapped};
+  return {state:differences.length?'blocked':notes.length?'notes':'matches',differences:[...new Set(differences)],notes,excluded,setup,headerLine:inspection.headerLine,headers,unmapped,detectedShape};
 }
 
 export function calculateCompatible(file:ImportedFile,sheetIndex:number,check:CompatibilityResult):CalculationReport {
