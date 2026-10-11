@@ -16,6 +16,8 @@ test('single explanation card keeps all details and evidence',async({page})=>{
  const csv=samples[0].csv.replaceAll('"E-02","EX-04","MLD-12","A"','"E-02","EX-99","MLD-99","B"');
  await upload(page,'manager-upload',csv);
  await page.getByTestId('continue-comparison').click();
+ await expect(page.getByRole('heading',{name:'Checks',exact:true})).toHaveCount(0);
+ await expect(page.getByRole('button',{name:'See details · calculation checks'})).toBeVisible();
  const section=page.getByTestId('possible-explanations');
  await expect(section).not.toHaveAttribute('open','');
  await section.locator(':scope > summary').click();

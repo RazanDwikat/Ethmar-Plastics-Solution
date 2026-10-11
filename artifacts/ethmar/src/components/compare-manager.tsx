@@ -5,20 +5,19 @@ import { compareCalculatedRuns } from '@/lib/calculation-comparison';
 import { runFields, suggestRuns } from '@/lib/comparison-tools';
 import { ComparisonExport } from './comparison-export';
 import { TermHelp } from './setup-editor';
-import { Health, Issues, EvidenceRows } from './calculation-checks';
+import { Health } from './calculation-checks';
 import { RunPicker } from './run-picker';
 import { ValueEvidence, type EvidenceSelection } from './value-evidence';
 import { comparisonValues, displayHealth, displayValue, shortAnswer, visibleIssues } from './compare-presentation';
-import { PreparationAudit } from './preparation-evidence';
 import { ExplanationTooltip } from './explanation-tooltip';
-import { attributeExplanation, healthExplanation, valueExplanation } from '@/lib/explanations';
+import { attributeExplanation, valueExplanation } from '@/lib/explanations';
 import './compare.css';
 import './evidence-sheet.css';
 import {PossibleExplanations} from './possible-explanations';
 
 export function CompareManager({report,onDetails,onEdit}:{report:CalculationReport;onDetails:()=>void;onEdit?:()=>void}){
  const [ids,setIds]=useState<[string,string]>([report.runs[0]?.id||'',report.runs[1]?.id||'']),[picker,setPicker]=useState<0|1|null>(null),[evidence,setEvidence]=useState<EvidenceSelection|null>(null);
- const a=report.runs.find(r=>r.id===ids[0]),b=report.runs.find(r=>r.id===ids[1]),comparison=a&&b?compareCalculatedRuns(a,b,report.setup):null;
+ const a=report.runs.find(r=>r.id===ids[0]),b=report.runs.find(r=>r.id===ids[1]);
  const valueButton=(run:CalculatedRun,value:CalculatedValue)=><><ExplanationTooltip interactive text={`${valueExplanation(value,report,run)} Activate again on touch to see calculation evidence.`}><button className={`value-link ${value.state==='not-logged'?'neutral-value':''}`} onClick={()=>setEvidence({title:value.label,operands:[{run,value}]})} aria-label={`${run.id}: ${value.label}, ${displayValue(value)}. See evidence; on touch tap once for explanation, again for evidence.`}>{displayValue(value)}</button></ExplanationTooltip>{value.reason&&value.state!=='not-logged'&&<small>{value.reason}</small>}</>;
  const difference=(av:CalculatedValue,bv:CalculatedValue|undefined,compact=false)=>{
   const missing=[{run:a!,value:av},{run:b!,value:bv}].filter(o=>o.value?.state==='not-logged');
@@ -34,8 +33,6 @@ export function CompareManager({report,onDetails,onEdit}:{report:CalculationRepo
   ?report.setup.measurements.filter(m=>m.headline??preferred.includes(m.id)).map(m=>m.id)
   :[...new Set([...preferred,...(a?.metrics.map(m=>m.id)??[])])].slice(0,4);
  const keys=a?headlineIds.map(id=>a.metrics.find(m=>m.id===id)).filter((v):v is CalculatedValue=>!!v):[];
- const issues=[...new Map(visibleIssues([...report.issues,...(a?.issues??[]),...(b?.issues??[])]).map(i=>[JSON.stringify(i),i])).values()];
- const exclusions=[...new Map([...report.excluded,...[a,b].flatMap(r=>r?r.measures.flatMap(m=>m.evidence.excluded):[])].map(e=>[e.row.line,e])).values()];
  const counterpart=(run:CalculatedRun,value:CalculatedValue)=>a?.metrics.includes(value)?run.metrics.find(v=>v.id===value.id):run.measures.find(v=>v.id===value.id);
  return <div data-testid="compare-manager"><div className="run-cards">{([a,b] as const).map((run,index)=>{
   const suggestions=run?suggestRuns({...report,runs:report.runs.filter(r=>r.id===run.id||!ids.includes(r.id))},run.id):[];
@@ -49,9 +46,6 @@ export function CompareManager({report,onDetails,onEdit}:{report:CalculationRepo
  <section className="answer"><div className="eyebrow">What the records show</div><h2>{shortAnswer(a,b,report)}</h2><small>Recorded differences, not causes.</small></section>
  {!a.metrics.length&&<section className="panel empty"><h2>No measurements configured</h2><p>Source totals and evidence remain in All numbers.</p>{onEdit&&<button onClick={onEdit}>Configure measurements</button>}</section>}
  <div className="metric-grid">{keys.map(av=>{const bv=b.metrics.find(m=>m.id===av.id);return <section className="metric-card" key={av.id}><h3>{av.label}</h3><small>Baseline · {a.id}</small>{valueButton(a,av)}<small>Compared · {b.id}</small>{bv?valueButton(b,bv):<ExplanationTooltip text={`${b.id} has no calculated ${av.label} in this report. The ${av.label} difference is unavailable; review the configured measurement.`}>Unavailable</ExplanationTooltip>}<div className="delta"><small>Difference</small>{difference(av,bv)}</div></section>})}</div>
- <section className="panel checks-section"><h2>Checks</h2><details><summary>Data quality · <ExplanationTooltip text={healthExplanation(issues,report,`runs ${a.id} and ${b.id}`)}>{issues.length?`${issues.length} issues`:'Clear'}</ExplanationTooltip></summary>{issues.length?<Issues report={report} issues={issues}/>:<p>No data issues found for these runs.</p>}{[a,b].map((r,i)=><EvidenceRows key={i} report={report} title={`${r.id} · original run rows`} entries={r.rows.map(row=>({row,reason:'Original record assigned to this run.'}))}/>)}{report.source.prepared&&<details><summary>Technical details · preparation</summary><PreparationAudit file={report.source} sheetIndex={report.sheetIndex}/></details>}</details>
- <details><summary>Differences between runs <small><ExplanationTooltip text={comparison?.checks.map(attributeExplanation).join(' ')||'No attribute checks are available.'}>Same: {comparison?.checks.filter(c=>c.state==='match').map(c=>c.label).join(', ')||'No assessed attributes match'}</ExplanationTooltip></small></summary>{comparison?.checks.filter(c=>c.state!=='match').map((c,i)=><div className="file-note" key={i}><ExplanationTooltip text={attributeExplanation(c)}><strong>{c.label} · {c.state==='not-assessed'?'Not assessed':'Different'}</strong></ExplanationTooltip><p dir="auto"><ExplanationTooltip text={attributeExplanation(c)}>{c.baseline} → {c.compared}</ExplanationTooltip></p><small>{c.reason}</small></div>)}<div className="row"><span>Input tolerance <TermHelp text="Allowed absolute input difference in your configured unit. Equal to tolerance is allowed; zero requires equal quantities."/></span></div></details>
- <EvidenceRows report={report} entries={exclusions} title="Rows not used"/></section>
  <details className="panel all-numbers"><summary>All numbers · {values.length} measurements</summary><p>Difference = compared − baseline. Rate differences are percentage points. Open a value for original evidence.</p><div className="scroll" tabIndex={0}><table className="compare-table"><thead><tr><th>Measurement</th><th>Baseline · {a.id}</th><th>Compared · {b.id}</th><th>Difference</th></tr></thead><tbody>{values.map((av,i)=>{const bv=counterpart(b,av);return <tr key={`${av.id}-${i}`}><th>{av.label}</th><td>{valueButton(a,av)}</td><td>{bv?valueButton(b,bv):<ExplanationTooltip text={`${b.id} has no calculated ${av.label} in this report. Affected number: the ${av.label} difference. Review the measurement setup.`}>Unavailable</ExplanationTooltip>}</td><td>{difference(av,bv,keys.includes(av))}</td></tr>})}</tbody></table></div></details>
  <PossibleExplanations key={`${a.id.length}:${a.id}${b.id}`} report={report} a={a} b={b} onEvidence={setEvidence}/>
  <div className="row between compare-tools"><button onClick={onDetails}><Info/>See details · calculation checks</button><ComparisonExport key={`${a.id.length}:${a.id}${b.id}`} report={report} a={a} b={b}/></div><p>Exports retain units, warnings, unavailable reasons and source references.</p>

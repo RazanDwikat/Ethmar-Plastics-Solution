@@ -61,6 +61,12 @@ The user requested design-only work first, then approved merging the three proto
 
 **Why:** The user explicitly replaced the separate-phase navigation with a simpler unified experience for nontechnical users.
 
+The Manager comparison page must not show the standalone “Checks” box (Data quality, Differences between runs, Rows not used).
+
+**Why:** The user explicitly asked to remove that box from the Manager page, identifying it in a screenshot.
+
+**How to apply:** Keep underlying checks, run-health badges, detailed calculation view, evidence and exports intact; do not reintroduce the standalone panel.
+
 **How to apply:** Keep all mapping, data checks, and comparison/evidence capabilities in the unified flow. Setup has upload, file check, confirm columns and done; advanced controls are collapsed. Use plain language, minimum 14px text, one primary button per screen, and icon-plus-text statuses. The clean demo's 45-minute downtime must be outside changeover. Demo 2 duplicates E-01 scrap and omits E-02 material input; demo 3 includes a conflicting event ID with a different quantity and downtime overlapping changeover. Summarize which run had more waste, whether its mold change was longer, and its separate downtime using clear units such as 6 h and 45 min.
 
 Unmapped CSV columns remain in original source rows and may become named custom fields. Users choose evidence/source-only visibility or also comparison-attribute use; differing comparison values trigger nonblocking “compare with care” notices. Save custom-field choices in mapping profiles.
