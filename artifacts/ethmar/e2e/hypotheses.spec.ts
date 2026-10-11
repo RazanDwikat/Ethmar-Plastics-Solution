@@ -1,7 +1,7 @@
 import {test,expect} from './analyst-fixture';
 import {upload} from './helpers';
 import {samples} from '../src/lib/samples';
-test('local hypotheses collapse, limit to five, show all and open evidence',async({page})=>{
+test('single explanation card keeps all details and evidence',async({page})=>{
  await upload(page,'upload-file',samples[0].csv);
  await page.getByRole('button',{name:/Continue to row type/}).click();
  await page.getByTestId('button-confirm-shape').click();
@@ -19,10 +19,18 @@ test('local hypotheses collapse, limit to five, show all and open evidence',asyn
  const section=page.getByTestId('possible-explanations');
  await expect(section).not.toHaveAttribute('open','');
  await section.locator(':scope > summary').click();
- await expect(section.locator('article')).toHaveCount(5);
+ await expect(section.locator('article')).toHaveCount(1);
+ await expect(section.getByTestId('explanation-summary')).toContainText('5 percentage points higher in E-02');
  await expect(section).toContainText('Review equipment configuration records.');
- await section.getByRole('button',{name:/Show all/}).click();
- expect(await section.locator('article').count()).toBeGreaterThan(5);
+ await section.scrollIntoViewIfNeeded();
+ await page.screenshot({path:'/tmp/ethmar-single-card-desktop.png',fullPage:true});
+ await page.setViewportSize({width:390,height:844});
+ await expect(section.locator('article')).toHaveCount(1);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
+ await section.scrollIntoViewIfNeeded();
+ await page.screenshot({path:'/tmp/ethmar-single-card-mobile.png'});
+ await section.getByTestId('explanation-details').locator('summary').click();
+ expect(await section.locator('[data-rule]').count()).toBeGreaterThan(5);
  await section.getByRole('button',{name:/See rows:/}).first().click();
  await expect(page.getByRole('dialog')).toContainText('Hypothesis evidence');
  await expect(page.getByRole('dialog')).toContainText('EX-99');

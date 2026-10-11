@@ -7,12 +7,38 @@ import {samples} from './samples';
 import {possibleExplanations,hypothesisTitle} from './hypotheses';
 import {exportComparisonCsv,comparisonPrintHtml} from './comparison-tools';
 import {importSetupJson} from './profile-transfer';
+import {explanationSummary} from './explanation-summary';
 async function fixture(index=0){
  const file=await parseBytes(new TextEncoder().encode(samples[index].csv).buffer,'rules.csv'),inspection=inspectSheet(file.sheets[0],'.');
  const setup=defaultSetup(inspection);
  const calculate=()=>calculateFile(file,0,setup,inspection.headerLine);
  return {file,setup,inspection,calculate};
 }
+test('summary consolidates values, keeps clear differences and all original rules',async()=>{
+ const f=await fixture(),r=f.calculate(),[a,b]=r.runs,s=explanationSummary(r,a,b);
+ assert(s.differences.some(d=>d.text.includes('5 percentage points higher in E-02')));
+ assert(s.differences.some(d=>d.text.includes('2 h higher in E-02')));
+ assert(s.differences.some(d=>d.text.includes('Not logged')&&d.text.includes('No comparison')));
+ assert.equal(new Set(s.checks).size,s.checks.length);
+ assert.deepEqual(s.items,possibleExplanations(r,a,b));
+ const attrs=explanationSummary(r,a,r.runs[3]);
+ assert(!attrs.context.join(' ').includes('Scrap rate ='));
+ const csv=exportComparisonCsv(r,a,b),html=comparisonPrintHtml(r,a,b);
+ for(const item of s.items){assert(csv.includes(item.id.split(':')[0]==='co'?'co-occurrence':item.rule));assert(html.includes(item.check));}
+ assert(csv.includes('5 percentage points higher in E-02'));
+ assert(html.includes('What is different?'));
+});
+test('summary explains missing values and gives no invented factor when rules do not match',async()=>{
+ const f=await fixture(1),r=f.calculate(),[a,b]=r.runs,s=explanationSummary(r,a,b);
+ const missing=s.differences.find(d=>d.id===a.metrics[0].id)!;
+ assert(missing.text.includes("Can't calculate"));
+ assert(missing.text.includes(b.metrics[0].reason));
+ assert(s.context[0].includes('data-quality'));
+ const equal={...a,id:'other',measures:a.measures.filter(m=>m.id!=='downtime'),issues:[]};
+ const clean={...a,issues:[]};
+ assert(explanationSummary(r,clean,equal).context.some(c=>c.includes('No possible explanation')));
+ assert(explanationSummary(r,a,a).context[0].includes('same run'));
+});
 test('attribute differences require a differing measurement and retain original context evidence',async()=>{
  const f=await fixture();f.setup.attributeChecks={machine:'Verify equipment records.'};
  const r=f.calculate(),[a,,,b]=r.runs,items=possibleExplanations(r,a,b).filter(x=>x.rule==='attribute');

@@ -1,0 +1,10 @@
+.explanation-summary { margin-top: 20px; overflow-wrap: anywhere; }
+.explanation-summary h3 { margin-top: 24px; }
+.explanation-summary ul, .explanation-summary ol { padding-inline-start: 24px; }
+.explanation-summary li { margin-block: 12px; line-height: 1.65; }
+.explanation-summary > details { margin-top: 24px; border-top: 1px solid #d8e2dc; padding-top: 20px; }
+.explanation-summary [data-rule] { padding-block: 12px; border-bottom: 1px solid #d8e2dc; }
+@media(max-width:600px) {
+ .explanation-summary { padding: 16px; }
+ .explanation-summary h2 { font-size: 22px; }
+}

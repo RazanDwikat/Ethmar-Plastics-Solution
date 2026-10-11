@@ -2,7 +2,8 @@ import type {CalculatedRun,CalculationReport,CalculatedValue} from './calculatio
 import type {Setup} from './setup';
 import {compareCalculatedRuns} from './calculation-comparison';
 import {formatCalculated,timestamp} from './calculation-values';
-import {possibleExplanations,hypothesisTitle} from './hypotheses';
+import {hypothesisTitle} from './hypotheses';
+import {explanationSummary} from './explanation-summary';
 
 export function searchRunText(text:string,query:string):boolean {
   const normalized=(s:string)=>s.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
@@ -64,7 +65,11 @@ function exportRows(report:CalculationReport,a:CalculatedRun,b:CalculatedRun):st
     rows.push([av.label,formatCalculated(av),bv?formatCalculated(bv):'Not configured',formatCalculated({value,unit,state:'unavailable',decimals:av.decimals}),unit,reason,refs(av),bv?refs(bv):'']);
   }
   rows.push([hypothesisTitle,'Fixed local rules; timing proximity means within 15 minutes. Not causal rankings.']);
-  for(const item of possibleExplanations(report,a,b))rows.push(['Hypothesis',item.rule,item.facts,item.hypothesis,`Check: ${item.check}`,...item.evidence.map(e=>`${e.run.id} · ${e.value.label}: ${refs(e.value)}; full run lines ${e.run.rows.map(r=>r.line).join(', ')}`)]);
+  const summary=explanationSummary(report,a,b);
+  for(const d of summary.differences)rows.push(['What is different?',d.text]);
+  for(const text of summary.context)rows.push(['Possible explanation — not a conclusion',text]);
+  for(const text of summary.checks)rows.push(['What to check',text]);
+  for(const item of summary.items)rows.push(['Hypothesis',item.rule,item.facts,item.hypothesis,`Check: ${item.check}`,...item.evidence.map(e=>`${e.run.id} · ${e.value.label}: ${refs(e.value)}; full run lines ${e.run.rows.map(r=>r.line).join(', ')}`)]);
   rows.push(['Comparability','State','Baseline','Compared','Explanation']);
   for(const c of compareCalculatedRuns(a,b,report.setup).checks)rows.push([c.label,c.state,c.baseline,c.compared,c.reason]);
   for(const r of [a,b]){
