@@ -14,7 +14,12 @@ export type EventDefinition = {
   durationUnit:'hours'|'minutes'|'seconds';
 };
 export const templates = ['Ratio','Duration','Total','Difference','Count','Rate per hour','Average'] as const;
-export type Measurement = { id:string; label:string; template:typeof templates[number]; a:string; b:string; exampleA:number; exampleB:number };
+export type Measurement = { id:string; label:string; template:typeof templates[number]; a:string; b:string; exampleA:number; exampleB:number; required?:boolean };
+/** Legacy built-in identity, not the editable display name. Explicit false is preserved. */
+export const isMeasurementRequired=(m:Measurement)=>m.required??m.id==='scrap-rate';
+export function normalizeRequirements(setup:Setup):Setup{
+  return {...setup,measurements:setup.measurements.map(m=>({...m,required:isMeasurementRequired(m)}))};
+}
 export type Setup = {
   preparation?:PreparationRecipe;
   version:1; shape:'event'|'run'; mapping:Record<Role,number|null>; synonyms:Synonyms; groupBy:'runId'|'orderId';
@@ -61,10 +66,10 @@ export function defaultSetup(inspection:Inspection, shape=inspection.shape):Setu
   return {version:1,shape,mapping,synonyms,groupBy:mapping.runId!==null?'runId':'orderId',events,
     unit:'kg',tolerance:0,checkBalance:true,customFields:[],
     measurements:[
-      {id:'scrap-rate',label:'Scrap rate',template:'Ratio',a:'scrap',b:'material',exampleA:50,exampleB:1000},
-      {id:'changeover',label:events[3].label,template:'Duration',a:'changeover',b:'',exampleA:4,exampleB:0},
-      {id:'downtime',label:'Unplanned downtime',template:'Duration',a:'downtime',b:'',exampleA:0.75,exampleB:0},
-      {id:'good',label:'Good output',template:'Total',a:'good',b:'',exampleA:950,exampleB:0},
+      {id:'scrap-rate',label:'Scrap rate',template:'Ratio',a:'scrap',b:'material',exampleA:50,exampleB:1000,required:true},
+      {id:'changeover',label:events[3].label,template:'Duration',a:'changeover',b:'',exampleA:4,exampleB:0,required:false},
+      {id:'downtime',label:'Unplanned downtime',template:'Duration',a:'downtime',b:'',exampleA:0.75,exampleB:0,required:false},
+      {id:'good',label:'Good output',template:'Total',a:'good',b:'',exampleA:950,exampleB:0,required:false},
     ],
   };
 }
@@ -126,7 +131,7 @@ export function setupProblems(s:Setup, headers:string[]):{errors:string[];notes:
   return {errors:[...new Set(errors)],notes:[...new Set(notes)]};
 }
 export function applyProfile(profile:Profile, headers:string[]):{setup:Setup;notes:string[]} {
-  const setup=structuredClone(profile.setup),notes:string[]=[];
+  const setup=normalizeRequirements(structuredClone(profile.setup)),notes:string[]=[];
   const remap=(index:number|null)=>{
     if(index===null)return null;
     const old=profile.headers[index];

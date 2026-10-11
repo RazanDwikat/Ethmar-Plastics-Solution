@@ -44,6 +44,7 @@ test('saved JSON, reload and manager replay retain the recipe but never stale co
   await compare(page);
   await expect(page.getByTestId('compare-manager')).toContainText('M-01');
   await expect(page.getByTestId('compare-manager')).not.toContainText('E-01');
+  await page.locator('.all-numbers > summary').click();
   const inputTotals = page.getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'Material input', exact: true }) });
   await expect(inputTotals).toContainText('4,000');
   const scrapTotals = page.getByRole('row').filter({ has: page.getByRole('rowheader', { name: 'Scrap', exact: true }) });

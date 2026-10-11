@@ -2,6 +2,7 @@ import type { AttributeCheck, CalculationReport, CalculatedRun, CalculatedValue,
 import type { Setup } from './setup';
 
 export function affectedLabels(issue:DataIssue,setup:Setup):string[]{
+ if(issue.code==='missing-context')return ['comparison attributes and identity checks only'];
  const ids=new Set(issue.definitionIds);
  if(!ids.size)return [...setup.events.map(e=>e.label),...setup.measurements.map(m=>m.label)];
  return [...new Set([...setup.events.filter(e=>ids.has(e.id)).map(e=>e.label),...setup.measurements.filter(m=>ids.has(m.id)||ids.has(m.a)||(usesSecondOperand(m.template)&&ids.has(m.b))).map(m=>m.label)])];

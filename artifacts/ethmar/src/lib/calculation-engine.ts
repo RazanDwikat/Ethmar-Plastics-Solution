@@ -1,7 +1,7 @@
 import { inspectSheet, type ImportedFile, type SourceRow } from './inspection';
 import { setupProblems, type Setup, type Measurement } from './setup';
 import { formatCalculated, numberText, quantity, timestamp, timestampZone } from './calculation-values';
-import type { CalculationReport, CalculatedRun, CalculatedValue, DataIssue, Evidence, EvidenceRow } from './calculation-types';
+import type { CalculationReport, CalculatedRun, CalculatedValue, DataIssue, Evidence, EvidenceRow, CalculationAvailability } from './calculation-types';
 import { prepareFile } from './preparation';
 export { formatCalculated } from './calculation-values';
 export type * from './calculation-types';
@@ -12,7 +12,7 @@ const uniqueRows=(rows:EvidenceRow[])=>[...new Map(rows.map(r=>[r.row.line,r])).
 type Interval={start:number;end:number;row:SourceRow;definitionId:string;zone:'naive'|'offset'};
 type DefinitionResult={measure:CalculatedValue; validRows:SourceRow[]; intervals:Interval[]; count:number|null; countRows:SourceRow[]};
 
-export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,headerLine?:number|null,compatibilityExcluded:EvidenceRow[]=[]):CalculationReport {
+export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,headerLine?:number|null,compatibilityExcluded:EvidenceRow[]=[],availability?:CalculationAvailability):CalculationReport {
   if(setup.preparation&&!file.prepared){
     const result=prepareFile(file,sheetIndex,setup.preparation,headerLine);
     file=result.file;headerLine=result.headerLine;
@@ -20,10 +20,12 @@ export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,he
   const sheet=file.sheets[sheetIndex];
   if(!sheet)throw new Error('Select a worksheet before calculating.');
   const inspection=inspectSheet(sheet,file.decimal,headerLine);
-  const validation=setupProblems(setup,inspection.headers);
+  // Runtime absent context fields retain their definitions with -1; the saved setup
+  // has already been validated by compatibility and is never changed.
+  const validation=setupProblems(availability?{...setup,customFields:setup.customFields.filter(f=>f.column>=0)}:setup,inspection.headers);
   if(validation.errors.length)throw new Error(`Review your setup first: ${validation.errors.join(' ')}`);
   const mapping={setup:structuredClone(setup),headers:[...inspection.headers],decimal:file.decimal,sheet:sheet.name,file:file.name};
-  const issues:DataIssue[]=[],excluded:EvidenceRow[]=[...(file.prepared?.excluded??[]),...compatibilityExcluded];
+  const issues:DataIssue[]=[...(availability?.issues??[])],excluded:EvidenceRow[]=[...(file.prepared?.excluded??[]),...compatibilityExcluded];
   const compatibilityLines=new Set(compatibilityExcluded.map(e=>e.row.line));
   const add=(target:DataIssue[],code:string,level:DataIssue['level'],message:string,rows:SourceRow[],definitionIds:string[]=[])=>{
     target.push({code,level,message,lines:[...new Set(rows.map(r=>r.line))],definitionIds});
@@ -139,6 +141,12 @@ export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,he
         const refs=[...affectedConflicts,...unknownConflict];
         evidence.excluded.push(...refs.map(row=>({row,reason:'Conflicting event ID: no original row is selected as correct.'})));
         fail(`${definition.label} has a conflicting event ID, so no total is chosen.`,'conflict-measure',refs);continue;
+      }
+      if(active.length){result.count=setup.shape==='run'?1:active.length;result.countRows=setup.shape==='run'?[active[0]]:active;}
+      if(availability?.definitions[definition.id]?.length){
+        const reason=availability.definitions[definition.id].join(' ');
+        evidence.excluded.push(...active.map(row=>({row,reason})));
+        fail(reason,'file-missing-source',[]);continue;
       }
       if(!active.length){
         fail(`No ${definition.label} record is logged for this run.`,'not-logged',[],definition.kind==='timed'?'not-logged':'unavailable');continue;

@@ -30,10 +30,10 @@ test('exact original headers match regardless of order; acceptance numbers uncha
   assert.equal(report.runs.find(r=>r.id==='E-02')!.metrics.find(m=>m.id==='downtime')!.value,0.75);
   assert.deepEqual(profile,before);
 });
-test('missing, case-changed, ambiguous headers blocked; extra columns retained as unmapped',async()=>{
+test('missing optional identity headers warn without automatic remapping; extra columns retained',async()=>{
   const {file,profile}=await fixture();
   cell(file,1,0,'EVENT_ID');
-  assert.match(checkCompatibility(file,0,profile).differences.join(' '),/Missing column: “event_id”/);
+  assert.match(checkCompatibility(file,0,profile).notes.join(' '),/Missing column: “event_id”/);
   cell(file,1,0,'event_id');
   for(const row of file.sheets[0].rows)row.cells.push({address:`Z${row.line}`,raw:row.line===1?'operator_note':'original note',display:row.line===1?'operator_note':'original note'});
   const check=checkCompatibility(file,0,profile);
@@ -41,22 +41,23 @@ test('missing, case-changed, ambiguous headers blocked; extra columns retained a
   const report=calculateCompatible(file,0,check);
   assert.equal(report.source.sheets[0].rows[1].cells.at(-1)!.raw,'original note');
   cell(file,1,file.sheets[0].rows[0].cells.length-1,'event_id');
-  assert.match(checkCompatibility(file,0,profile).differences.join(' '),/appears more than once/);
+  assert.match(checkCompatibility(file,0,profile).notes.join(' '),/appears more than once/);
 });
-test('unknown activities and invalid dates/numbers excluded from every calculation, originals retained',async()=>{
+test('unknown activities excluded; invalid values affect only dependent measurements',async()=>{
   const {file,profile}=await fixture();
   cell(file,2,profile.setup.mapping.eventType!,'OTHER');
   cell(file,3,profile.setup.mapping.quantity!,'not a number');
   cell(file,4,profile.setup.mapping.start!,'yesterday');
   const before=structuredClone(file),check=checkCompatibility(file,0,profile);
   assert.equal(check.state,'notes');
-  assert.deepEqual(check.excluded.map(e=>e.row.line),[2,3,4]);
+  assert.deepEqual(check.excluded.map(e=>e.row.line),[2]);
   assert.match(check.notes.join(' '),/1 row — lines 3/);
   const report=calculateCompatible(file,0,check);
   for(const run of report.runs)for(const value of [...run.metrics,...run.measures]){
-    assert.ok(value.evidence.used.every(e=>![2,3,4].includes(e.row.line)));
+    assert.ok(value.evidence.used.every(e=>![2,3].includes(e.row.line)));
   }
-  assert.ok(report.excluded.some(e=>e.row.line===3));
+  assert.ok(report.runs[0].measures.find(v=>v.id==='good')!.evidence.excluded.some(e=>e.row.line===3));
+  assert.equal(report.runs[0].measures.find(v=>v.id==='scrap')!.value,50);
   assert.deepEqual(file,before);
 });
 test('conflicting event IDs remain conflicting even if one row is excluded by parsing checks',async()=>{
@@ -72,7 +73,8 @@ test('custom event headers and unknown activities preserve shape; empty files do
   cell(file,1,column,'Factory activity');profile.headers[column]='Factory activity';
   for(const row of file.sheets[0].rows.slice(1))cell(file,row.line,column,'UNDEFINED');
   const check=checkCompatibility(file,0,profile);
-  assert.equal(check.detectedShape,'event');assert.equal(check.state,'notes');
+  assert.equal(check.detectedShape,'event');assert.equal(check.state,'blocked');
+  assert.match(check.differences.join(' '),/Required measurement “Scrap rate”/);
   file.sheets[0].rows=file.sheets[0].rows.slice(0,1);
   assert.equal(checkCompatibility(file,0,profile).detectedShape,null);
   assert.equal(checkCompatibility(file,0,profile).state,'blocked');

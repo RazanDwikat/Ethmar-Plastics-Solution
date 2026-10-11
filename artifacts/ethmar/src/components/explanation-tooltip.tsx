@@ -11,7 +11,7 @@ export function ExplanationTooltip({text,children,onAction,interactive=false}:{t
   const key=(e:KeyboardEvent)=>{if(e.key==='Escape'){e.preventDefault();e.stopImmediatePropagation();dismiss()}};
   const outside=(e:PointerEvent)=>{if(!host.current?.contains(e.target as Node))dismiss()};
   document.addEventListener('keydown',key,true);document.addEventListener('pointerdown',outside,true);
-  const scroll=(e:Event)=>{if(!(e.target instanceof Element&&e.target.closest('[role=tooltip]')))dismiss()};
+  const scroll=(e:Event)=>{if(!(e.target instanceof Element&&e.target.closest('[role=tooltip]'))){if(host.current?.contains(document.activeElement))show();else dismiss()}};
   window.addEventListener('scroll',scroll,true);window.addEventListener('resize',dismiss);
   return()=>{document.removeEventListener('keydown',key,true);document.removeEventListener('pointerdown',outside,true);window.removeEventListener('scroll',scroll,true);window.removeEventListener('resize',dismiss);clearTimeout(leaveTimer.current)};
  },[open]);

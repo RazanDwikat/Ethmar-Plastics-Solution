@@ -1,5 +1,6 @@
 import type { ImportedFile } from './inspection';
 import type { Profile, Setup } from './setup';
+import { normalizeRequirements } from './setup';
 import type { PreparationRecipe } from './preparation-types';
 import { validateSavedData } from './saved-data-validation';
 export type SavedWorkspace = {
@@ -39,7 +40,10 @@ export async function loadLocalData():Promise<LocalData>{
     tx.oncomplete=()=>{
       try{
         const data={workspace:workspace.result??null,profiles:profiles.result??[]};
-        validateSavedData(data.workspace,data.profiles);resolve(data);
+        validateSavedData(data.workspace,data.profiles);
+        if(data.workspace?.setup)data.workspace.setup=normalizeRequirements(data.workspace.setup);
+        data.profiles=data.profiles.map((p:Profile)=>({...p,setup:normalizeRequirements(p.setup)}));
+        resolve(data);
       }catch(error){reject(error);}
     };
     tx.onabort=tx.onerror=()=>reject(new Error('Saved data could not be read. Keep your source files; you can retry or delete browser data.'));

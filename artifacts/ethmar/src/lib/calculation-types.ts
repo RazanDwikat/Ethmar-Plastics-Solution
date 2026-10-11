@@ -3,6 +3,8 @@ import type { Setup } from './setup';
 
 export type DataIssue = { code:string; level:'note'|'missing'; message:string; lines:number[]; definitionIds:string[] };
 export type EvidenceRow = { row:SourceRow; reason:string };
+/** Manager-file availability only; never written into a saved analyst setup. */
+export type CalculationAvailability = {definitions:Record<string,string[]>; issues:DataIssue[]};
 export type Evidence = {
   formula:string; used:EvidenceRow[]; excluded:EvidenceRow[]; notes:string[];
   mapping:{ setup:Setup; headers:string[]; decimal:'.'|','; sheet:string; file:string };

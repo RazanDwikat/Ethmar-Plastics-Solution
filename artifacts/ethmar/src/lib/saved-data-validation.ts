@@ -10,7 +10,7 @@ function setup(v:unknown):boolean{
   return roles.every(([r])=>column(mapping[r])&&list(synonyms[r],text))
     &&['runId','orderId'].includes(String(v.groupBy))&&text(v.unit)&&typeof v.tolerance==='number'&&typeof v.checkBalance==='boolean'
     &&list(v.events,e=>object(e)&&text(e.id)&&text(e.label)&&list(e.values,text)&&['quantity','timed'].includes(String(e.kind))&&['range','duration'].includes(String(e.timing))&&['hours','minutes','seconds'].includes(String(e.durationUnit))&&['column','startColumn','endColumn','durationColumn'].every(k=>column(e[k])))
-    &&list(v.measurements,m=>object(m)&&text(m.id)&&text(m.label)&&templates.some(t=>t===m.template)&&text(m.a)&&text(m.b)&&typeof m.exampleA==='number'&&typeof m.exampleB==='number')
+    &&list(v.measurements,m=>object(m)&&text(m.id)&&text(m.label)&&templates.some(t=>t===m.template)&&text(m.a)&&text(m.b)&&typeof m.exampleA==='number'&&typeof m.exampleB==='number'&&(m.required===undefined||typeof m.required==='boolean'))
     &&(v.preparation===undefined||validatePreparationRecipe(v.preparation))
     &&list(v.customFields,f=>object(f)&&text(f.id)&&text(f.label)&&typeof f.column==='number'&&column(f.column)&&typeof f.compare==='boolean');
 }

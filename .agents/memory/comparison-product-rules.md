@@ -93,7 +93,7 @@ Compatibility requirements are measurement-specific, superseding blanket rejecti
 
 **Why:** The user explicitly refined the compatibility policy to distinguish whole-file requirements from incomplete individual runs.
 
-**How to apply:** Persist Required flags and show them in the setup summary; preserve grouping, readable-file and row-shape safety checks, shared evidence/tooltips and Copy message for analyst. This is the approved direction for planned compatibility changes, not a statement that implementation is complete.
+**How to apply:** Persist Required flags and show them in the setup summary; preserve grouping, readable-file and row-shape safety checks, shared evidence/tooltips and Copy message for analyst. Missing/invalid values must not remove otherwise usable independent measurements from a run-summary row.
 
 The analyst row-shape decision must be a visible standalone step immediately after File check, with two example cards, the detected guess preselected, and explicit confirmation saved with the setup. Manager compatibility automatically detects the new file shape and compares it with the saved setup; it never asks the manager to choose.
 
