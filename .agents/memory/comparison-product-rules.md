@@ -83,6 +83,12 @@ Setup is the analyst's preparation workflow, not a results dashboard. Confirmed 
 
 **Why (row-shape ownership):** The user explicitly corrected the manager row-shape prompt: this decision belongs to analyst Setup, not managers.
 
+The analyst row-shape decision must be a visible standalone step immediately after File check, with two example cards, the detected guess preselected, and explicit confirmation saved with the setup. Manager compatibility automatically detects the new file shape and compares it with the saved setup; it never asks the manager to choose.
+
+**Why:** The user specified this exact division of responsibility and requested removal of “No shape is assumed”.
+
+**How to apply:** Preserve custom-header support, report shape mismatches in plain language with “Copy message for analyst”, and never silently alter the saved interpretation.
+
 Open printable reports separately and require an explicit print action, rather than automatically invoking a native print dialog from Compare.
 
 **Why:** Automatic native printing interrupted the main browser journey. A separate report keeps Setup and Compare available and gives the user control over when to print.
