@@ -1,1 +1,2 @@
 - [Comparison product rules](comparison-product-rules.md) — Ethmar MVP scope, evidence integrity, duplicate policy, and local-only persistence.
+- [Browser test runtime](browser-test-runtime.md) — use Nix-provided Chromium in Replit; downloaded Playwright browsers may lack shared libraries.
