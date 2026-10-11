@@ -1,0 +1,45 @@
+Do NOT remove any feature and do NOT change any calculation. Reorganize the Manager
+Compare page to remove repetition, and redesign how original rows are displayed.
+
+PAGE ORDER: file + setup header; two run cards (with similar-run chips); a short
+answer; four metric cards; one "Checks" section; "All numbers" table (collapsed by
+default); export and print.
+
+1. ANSWER: max 2 sentences, e.g. "E-02 had more scrap (10% vs 5%) and a longer
+   changeover (6 h vs 4 h). E-02 also had a 45 min stop, shown separately." Put
+   "recorded differences, not causes" in one small note. State "no stop recorded"
+   only once on the page.
+2. DOWNTIME: "no stop recorded" is information, not a data issue. Do not mark a run
+   as "Note" because of it. Show it in neutral style, never as zero. The difference
+   reads "No comparison: E-01 has no stop recorded" in neutral gray, not "Can't
+   calculate" in an error style.
+3. SIMILAR RUNS: never suggest a run already selected in either card; hide the
+   section when there is nothing to suggest. A chip shows run name, health icon and
+   a one-line reason (e.g. "Same line and mold"); full match details open on click.
+4. CHECKS: one section with three compact rows: (a) Data quality (clear / N issues),
+   expandable to the problem rows; (b) Differences between runs: one line listing
+   what is the same, then only attributes that differ or were not assessed;
+   (c) Rows not used: count, expandable, each with a plain reason. A header row is
+   listed here collapsed and is not counted as a warning. Remove the separate
+   per-run accordions, "File-wide data notes" and the large "Heads up" cards.
+5. TABLE: each measurement appears once: material input, good output, scrap, scrap
+   rate, changeover, unplanned downtime, with baseline, compared and difference.
+   Remove the duplicated "Definition totals" block.
+6. ORIGINAL ROWS (in the evidence drawer, run row lists and excluded rows): show a
+   spreadsheet-style table, not one cell per line:
+   - column header shown once: column letter + original header name
+   - one table row per source line; first column "Line N" (original line number)
+   - a short "What we did" column, e.g. "Scrap counted: 100 kg", "Material in:
+     1,000 kg", "Not used: header row"
+   - cells used in the calculation are highlighted, with a small legend
+   - empty cells show a gray "-", never "Empty string"
+   - by default show identifying columns and the columns used; a toggle "Show all
+     columns (N)" reveals the rest; sticky first columns; horizontal scroll;
+     comfortable row height
+   - prepared values show the original value with the converted value below in
+     small text (e.g. "0.05" then "-> 50 kg")
+   - excluded rows use the same table style, collapsed, with the reason
+7. EVIDENCE DRAWER ORDER: the formula large with actual values (e.g. 100 / 1,000 =
+   10%); the rows table; "Rows not used" collapsed; "Technical details" collapsed.
+Keep read-only behavior, original line numbers and cell addresses, and no causal
+claims. Show the result and stop.

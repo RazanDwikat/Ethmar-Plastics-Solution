@@ -95,6 +95,12 @@ The analyst row-shape decision must be a visible standalone step immediately aft
 
 **How to apply:** Preserve custom-header support, report shape mismatches in plain language with “Copy message for analyst”, and never silently alter the saved interpretation.
 
+Manager results should consolidate checks and avoid repeated measurements. An absent downtime record is neutral information, not zero and not a data-quality warning; do not change calculations to implement this presentation.
+
+**Why:** The user explicitly requested a simpler Manager page while preserving every feature and calculation.
+
+**How to apply:** Show file/setup, run choices, short answer, four key metrics, one Checks section, collapsed All numbers, then export/print. Keep source evidence spreadsheet-style with immutable originals, highlighted operands, original line/cell references, and preparation lineage.
+
 Open printable reports separately and require an explicit print action, rather than automatically invoking a native print dialog from Compare.
 
 **Why:** Automatic native printing interrupted the main browser journey. A separate report keeps Setup and Compare available and gives the user control over when to print.

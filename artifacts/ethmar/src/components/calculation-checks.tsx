@@ -1,16 +1,28 @@
 import { useState } from 'react';
 import { Check, Info, TriangleAlert } from 'lucide-react';
 import { formatCalculated, type CalculationReport, type CalculatedValue, type DataIssue, type EvidenceRow } from '@/lib/calculation-engine';
-import { CellEvidence, evidenceRowsForLines } from './preparation-evidence';
+import { evidenceRowsForLines } from './preparation-evidence';
+import { EvidenceSheet } from './evidence-sheet';
+import { inspectSheet } from '@/lib/inspection';
+import { usedCellAddresses, operandExpressions } from './compare-presentation';
 
 export function Health({state}:{state:'clear'|'note'|'missing'}) {
  return <span className={`tag ${state}`} data-testid={`health-${state}`}>{state==='clear'?<Check/>:state==='note'?<Info/>:<TriangleAlert/>}{state==='clear'?'Clear':state==='note'?'Note':'Missing'}</span>;
 }
 
-export function EvidenceRows({entries,title,report}:{entries:EvidenceRow[];title:string;report:CalculationReport}) {
+export function EvidenceRows({entries,title,report,value,expanded=false}:{entries:EvidenceRow[];title:string;report:CalculationReport;value?:CalculatedValue;expanded?:boolean}) {
  const [page,setPage]=useState(0);
  const pages=Math.max(1,Math.ceil(entries.length/15)),current=Math.min(page,pages-1);
- return <details className="evidence-rows"><summary>{title} · {entries.length} rows</summary>{entries.length?<><p>{report.source.name} · {report.source.sheets[report.sheetIndex].name}. All original columns are retained. Prepared values show their original source cells and operations below.</p><div className="scroll" tabIndex={0} aria-label={`${title}, original values`}><table><thead><tr><th scope="col">{report.source.kind==='csv'?'Physical lines':'Excel row'}</th><th scope="col">Reason / calculation</th><th scope="col">Values and original source cells</th></tr></thead><tbody>{entries.slice(current*15,(current+1)*15).map(({row,reason},i)=><tr key={`${row.line}-${i}`}><th scope="row">{row.line}{row.endLine&&row.endLine!==row.line?`–${row.endLine}`:''}</th><td className="evidence-reason">{reason}</td><td>{row.cells.map((cell,j)=><CellEvidence key={j} cell={cell}/>)}</td></tr>)}</tbody></table></div><div className="row between pagination"><span>Page {current+1} of {pages}</span><div className="row"><button disabled={!current} onClick={()=>setPage(current-1)}>Previous rows</button><button disabled={current===pages-1} onClick={()=>setPage(current+1)}>Next rows</button></div></div></>:<p>No rows in this category.</p>}</details>;
+ const sheet=report.source.prepared?.originalSheets[report.sheetIndex]??report.source.sheets[report.sheetIndex];
+ const headerLine=report.source.prepared?.headerLine??inspectSheet(sheet,report.source.decimal).headerLine;
+ const mapping=report.setup.mapping;
+ const identifiers=[mapping[report.setup.groupBy],mapping.eventId,mapping.eventType,mapping.date,mapping.line,mapping.machine,mapping.mold].filter((c):c is number=>c!==null);
+ const selected=report.source.prepared?entries.flatMap(e=>identifiers.flatMap(i=>(e.row.cells[i]?.trace?.origins??[]).map(o=>sheet.rows.find(r=>r.line===o.line)?.cells.findIndex(c=>c.address===o.address)??-1))):identifiers;
+ // Addresses are supplied by the engine's actual source expressions, not inferred from every mapped numeric column.
+ const expressions=value?operandExpressions(value,report):'';
+ const addresses=usedCellAddresses(entries,expressions);
+ if(value&&report.setup.measurements.find(m=>m.id===value.id)?.template==='Count')for(const e of entries)for(const i of [mapping[report.setup.groupBy],mapping.eventId,mapping.eventType])if(i!==null&&e.row.cells[i])addresses.push(e.row.cells[i].address);
+ return <details className="evidence-rows" open={expanded||undefined}><summary>{title} · {entries.length} {entries.length===1?'row':'rows'}</summary>{entries.length?<><p>{report.source.name} · {sheet.name}. Original values and source addresses are unchanged.</p><EvidenceSheet entries={entries.slice(current*15,(current+1)*15)} sheet={sheet} headerLine={headerLine} selectedColumns={selected} usedAddresses={addresses} unit={value?.unit}/><div className="row between pagination"><span>Page {current+1} of {pages}</span><div className="row"><button disabled={!current} onClick={()=>setPage(current-1)}>Previous rows</button><button disabled={current===pages-1} onClick={()=>setPage(current+1)}>Next rows</button></div></div></>:<p>No rows in this category.</p>}</details>;
 }
 
 export function Issues({issues,report}:{issues:DataIssue[];report:CalculationReport}) {
