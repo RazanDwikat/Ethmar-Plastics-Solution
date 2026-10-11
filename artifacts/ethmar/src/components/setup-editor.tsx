@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowRight, Check, Info, Plus, Trash2 } from 'lucide-react';
 import { applyProfile, exampleResult, roles, setupProblems, suggestMapping, templates, type Setup, type Profile, type Role } from '@/lib/setup';
 import type { Inspection } from '@/lib/inspection';
+import { ExplanationTooltip } from './explanation-tooltip';
 
 export function TermHelp({text}:{text:string}) { return <details className="help"><summary aria-label="Explain term">?</summary><span>{text}</span></details>; }
 type Props={setup:Setup;inspection:Inspection;onChange:(s:Setup)=>void;onDone:()=>void;profiles:Profile[];onProfiles:(p:Profile[])=>void;done:boolean;onEdit:()=>void;onCompare:()=>void;onDetails:()=>void;onSave:()=>void;onTest:()=>void;onApplyProfile?:(p:Profile)=>string[]|null};
@@ -11,7 +12,7 @@ export function SetupEditor({setup:s,inspection,onChange,onDone,profiles,onProfi
  const headers=inspection.headers, problems=setupProblems(s,headers);
  const update=(patch:Partial<Setup>)=>onChange({...s,...patch});
  const col=(value:number|null,onSelect:(v:number|null)=>void,label:string)=><label>{label}<select value={value??''} onChange={e=>onSelect(e.target.value===''?null:Number(e.target.value))}><option value="">Not mapped</option>{headers.map((h,i)=><option key={i} value={i}>{i+1} · {h||'No header'}</option>)}</select>{value!==null&&<small className="mapping-preview" dir="auto">Original: {inspection.columns[value]?.examples.join(' · ')||'No sample values'}</small>}</label>;
- const mapRow=([role,label]:typeof roles[number])=><div className="mapping-row" key={role}><strong className="row">{s.mapping[role]!==null?<Check color="#327455"/>:<Info color="#946c32"/>}{label}</strong>{col(s.mapping[role],v=>update({mapping:{...s.mapping,[role]:v}}),`Column for ${label}`)}<small>{s.mapping[role]===null?'Not assessed until a column is selected. Original data is kept.':'Column selected. Review the original values before confirming.'}</small></div>;
+ const mapRow=([role,label]:typeof roles[number])=><div className="mapping-row" key={role}><strong className="row">{s.mapping[role]!==null?<Check color="#327455"/>:<Info color="#946c32"/>}{label}</strong>{col(s.mapping[role],v=>update({mapping:{...s.mapping,[role]:v}}),`Column for ${label}`)}<small><ExplanationTooltip text={s.mapping[role]===null?`${label} has no mapped source column. Checks and measurements requiring ${label} cannot be assessed until a source column is selected. Original rows remain unchanged.`:`${label} is mapped to ${headers[s.mapping[role]!]}. Source examples: ${inspection.columns[s.mapping[role]!]?.examples.join(', ')||'none'}. Mapping is not a data-quality certification.`}>{s.mapping[role]===null?'Not assessed until a column is selected. Original data is kept.':'Column selected. Review the original values before confirming.'}</ExplanationTooltip></small></div>;
  const required:Role[]=s.shape==='event'?[s.groupBy,'eventType']:[s.groupBy];
  const attention=roles.filter(([r])=>required.includes(r)&&s.mapping[r]===null);
  const used=new Set(Object.values(s.mapping).filter(c=>c!==null));

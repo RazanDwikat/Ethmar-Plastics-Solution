@@ -1,0 +1,4 @@
+.explanation-trigger{display:inline-block;max-width:100%;vertical-align:baseline}
+.explanation-trigger:focus-visible{outline:2px solid #356c60;outline-offset:3px;border-radius:4px}
+.explanation-tip{position:fixed;z-index:10000;box-sizing:border-box;width:max-content;max-width:min(360px,calc(100vw - 24px));padding:12px 15px;border:1px solid #53766d;border-radius:8px;background:#173d35;color:#f3f5eb;font-size:14px;font-weight:400;line-height:1.55;text-align:left;white-space:normal;overflow-wrap:anywhere;overflow-y:auto;box-shadow:0 6px 20px #173d3526;pointer-events:auto}
+.explanation-trigger[role=button]{cursor:pointer}

@@ -11,6 +11,7 @@ export function CompareDrawer({title,onClose,children,wide=false}:{title:string;
    backgrounds.forEach(node=>{node.inert=true});
   document.body.style.overflow='hidden';panel.current?.focus();
   const key=(e:KeyboardEvent)=>{
+   if(host.current?.inert||e.defaultPrevented)return;
    if(e.key==='Escape'){e.preventDefault();close.current();return;}
    if(e.key!=='Tab')return;
     const nodes=Array.from(panel.current?.querySelectorAll<HTMLElement>('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href],summary,[tabindex="0"]')??[]).filter(n=>n.getClientRects().length&&!n.closest('[inert]'));
@@ -19,7 +20,7 @@ export function CompareDrawer({title,onClose,children,wide=false}:{title:string;
    if(e.shiftKey&&(document.activeElement===first||document.activeElement===panel.current)){e.preventDefault();last.focus();}
    else if(!e.shiftKey&&(document.activeElement===last||document.activeElement===panel.current)){e.preventDefault();first.focus();}
   };
-   const contain=(e:FocusEvent)=>{if(e.target instanceof Node&&!panel.current?.contains(e.target))panel.current?.focus()};
+   const contain=(e:FocusEvent)=>{if(!host.current?.inert&&e.target instanceof Node&&!panel.current?.contains(e.target))panel.current?.focus()};
    document.addEventListener('focusin',contain);
    document.addEventListener('keydown',key);return()=>{document.removeEventListener('keydown',key);document.removeEventListener('focusin',contain);backgrounds.forEach((node,i)=>{node.inert=previousInert[i]});document.body.style.overflow=bodyOverflow;if(previous?.isConnected)previous.focus();};
  },[]);
