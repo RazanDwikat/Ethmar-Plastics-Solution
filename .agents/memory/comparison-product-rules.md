@@ -89,6 +89,12 @@ Setup is the analyst's preparation workflow, not a results dashboard. Confirmed 
 
 **Why (row-shape ownership):** The user explicitly corrected the manager row-shape prompt: this decision belongs to analyst Setup, not managers.
 
+Compatibility requirements are measurement-specific, superseding blanket rejection of missing mapped columns. Analysts choose Required per measurement: Scrap rate required by default, all others optional. Whole-file absence of a required measurement's column/event type blocks; absence in only some runs does not. Optional missing inputs/context yield notes and unavailable/not-assessed values, never zero. Similar headers may be suggested but never auto-mapped.
+
+**Why:** The user explicitly refined the compatibility policy to distinguish whole-file requirements from incomplete individual runs.
+
+**How to apply:** Persist Required flags and show them in the setup summary; preserve grouping, readable-file and row-shape safety checks, shared evidence/tooltips and Copy message for analyst. This is the approved direction for planned compatibility changes, not a statement that implementation is complete.
+
 The analyst row-shape decision must be a visible standalone step immediately after File check, with two example cards, the detected guess preselected, and explicit confirmation saved with the setup. Manager compatibility automatically detects the new file shape and compares it with the saved setup; it never asks the manager to choose.
 
 **Why:** The user specified this exact division of responsibility and requested removal of “No shape is assumed”.
