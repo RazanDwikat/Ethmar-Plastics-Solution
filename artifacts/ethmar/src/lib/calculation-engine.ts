@@ -11,17 +11,19 @@ const uniqueRows=(rows:EvidenceRow[])=>[...new Map(rows.map(r=>[r.row.line,r])).
 type Interval={start:number;end:number;row:SourceRow;definitionId:string;zone:'naive'|'offset'};
 type DefinitionResult={measure:CalculatedValue; validRows:SourceRow[]; intervals:Interval[]; count:number|null; countRows:SourceRow[]};
 
-export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,headerLine?:number|null):CalculationReport {
+export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,headerLine?:number|null,compatibilityExcluded:EvidenceRow[]=[]):CalculationReport {
   const sheet=file.sheets[sheetIndex];
   if(!sheet)throw new Error('Select a worksheet before calculating.');
   const inspection=inspectSheet(sheet,file.decimal,headerLine);
   const validation=setupProblems(setup,inspection.headers);
   if(validation.errors.length)throw new Error(`Review your setup first: ${validation.errors.join(' ')}`);
   const mapping={setup:structuredClone(setup),headers:[...inspection.headers],decimal:file.decimal,sheet:sheet.name,file:file.name};
-  const issues:DataIssue[]=[],excluded:EvidenceRow[]=[];
+  const issues:DataIssue[]=[],excluded:EvidenceRow[]=[...compatibilityExcluded];
+  const compatibilityLines=new Set(compatibilityExcluded.map(e=>e.row.line));
   const add=(target:DataIssue[],code:string,level:DataIssue['level'],message:string,rows:SourceRow[],definitionIds:string[]=[])=>{
     target.push({code,level,message,lines:[...new Set(rows.map(r=>r.line))],definitionIds});
   };
+  for(const entry of compatibilityExcluded)add(issues,'compatibility-exclusion','note',entry.reason,[entry.row]);
   const structural=new Map<number,string>();
   for(const issue of inspection.issues){
     if(['repeated-header','multiple-headers','totals'].includes(issue.code))
@@ -67,7 +69,8 @@ export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,he
   const runs:CalculatedRun[]=[];
   for(const [id,allRows] of groups){
     const runIssues:DataIssue[]=[];
-    const runExclusions:EvidenceRow[]=[];
+    const runExclusions:EvidenceRow[]=compatibilityExcluded.filter(e=>allRows.some(r=>r.line===e.row.line));
+    for(const entry of runExclusions)add(runIssues,'compatibility-exclusion','note',entry.reason,[entry.row]);
     let rows=allRows;
     if(setup.shape==='run'&&allRows.length>1){
       const unique=new Map<string,SourceRow>();
@@ -109,7 +112,7 @@ export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,he
     const results=new Map<string,DefinitionResult>();
     for(const definition of setup.events){
       const source=setup.shape==='event'?rows.filter(r=>definition.values.includes(text(r,setup.mapping.eventType))):rows;
-      const active=source.filter(r=>!duplicates.has(r.line));
+      const active=source.filter(r=>!duplicates.has(r.line)&&!compatibilityLines.has(r.line));
       const localExcluded=[...excluded,...runExclusions.filter(x=>source.some(r=>r.line===x.row.line))];
       const evidence:Evidence={formula:'',used:[],excluded:localExcluded,notes:[],mapping};
       const unit=definition.kind==='timed'?'hours':setup.unit;
@@ -121,7 +124,7 @@ export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,he
         add(runIssues,code,state==='not-logged'?'note':'missing',reason,affected,[definition.id]);
       };
       // Unknown conflicting row types could belong to any configured activity.
-      const affectedConflicts=active.flatMap(r=>conflicts.get(r.line)??[]);
+      const affectedConflicts=source.flatMap(r=>conflicts.get(r.line)??[]);
       const unknownConflict=allRows.filter(r=>conflicts.has(r.line)&&!setup.events.some(e=>e.values.includes(text(r,setup.mapping.eventType))));
       if(affectedConflicts.length||unknownConflict.length){
         const refs=[...affectedConflicts,...unknownConflict];

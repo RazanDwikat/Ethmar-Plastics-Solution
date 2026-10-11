@@ -56,3 +56,15 @@ export function saveProfiles(profiles:Profile[]):Promise<void>{
 export function deleteAllLocalData():Promise<void>{
   return enqueue(()=>transact(s=>s.clear()));
 }
+export async function loadManagerSetupId():Promise<string|null>{
+  await queue.catch(()=>{});
+  const db=await open();
+  try{return await new Promise((resolve,reject)=>{
+    const tx=db.transaction(STORE,'readonly'),req=tx.objectStore(STORE).get('managerSetupId');
+    tx.oncomplete=()=>resolve(typeof req.result==='string'?req.result:null);
+    tx.onabort=tx.onerror=()=>reject(new Error('Could not read the last used manager setup.'));
+  });}finally{db.close();}
+}
+export function saveManagerSetupId(id:string):Promise<void>{
+  return enqueue(()=>transact(s=>s.put(id,'managerSetupId')));
+}

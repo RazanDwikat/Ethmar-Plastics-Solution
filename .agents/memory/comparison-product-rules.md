@@ -29,9 +29,9 @@ For one-row-per-run exports, repeated summary rows must not be summed as separat
 
 The clean demo must show E-01/E-02 scrap rates of 5%/10%, a 5-percentage-point difference, changeover of 4h/6h with a 2h difference, and E-02 unplanned downtime of 45min separately. Both runs have line L1; product stays unmapped.
 
-The Upload page should no longer offer built-in sample files. Retain demo datasets for regression coverage rather than reintroducing their choices on the page.
+The analyst Upload page should not offer built-in sample files. The separate manager upload experience must offer Sample data.
 
-**Why:** After finishing the MVP, the user requested removing sample files from the Upload page.
+**Why:** The user removed sample choices from analyst upload, then explicitly requested samples for the separate manager experience.
 
 **How to apply:** Keep the user's own CSV/Excel upload available and do not clear existing browser files or profiles as part of this UI change.
 
@@ -75,11 +75,11 @@ File inspection precedes mapping and must preserve original rows and line number
 
 **How to apply:** Do not imply CSV can prove merged spreadsheet cells; flag suspicious headings instead. Duration-only records cannot establish time overlap.
 
-Setup is the analyst's preparation workflow, not a results dashboard. Confirmed setup ends with “Go to Compare”; run results and differences belong to Compare · manager. Keep detailed quality checks reachable without removing features.
+Setup is the analyst's preparation workflow, not a results dashboard. Confirmed setup ends with “Setup saved” and “Save / Export setup.” Independent file testing shows shape, mapping and quality; only the small test-only manager preview may use the analyst's file. Normal manager entry requires its own fresh file and a saved read-only setup.
 
-**Why:** The user explicitly objected to Phase C's results being displayed under Setup instead of Compare.
+**Why:** The user explicitly requested complete Analyst/Manager experience separation after objecting to comparison results under Setup.
 
-**How to apply:** Preserve this separation even when adding new calculations. An edit to interpretation requires renewed confirmation before manager results are shown.
+**How to apply:** Preserve this separation and every existing feature. Manager compatibility must match exact original headers independent of order, retain extra columns, exclude and explain unknown activities and unparseable rows, and stop on missing columns or a different row shape. Never infer shape from a custom header alone; require an explicit row-shape choice. Excel uses the saved sheet name or asks. Production data remains browser-only; use no accounts or server-side role enforcement.
 
 Open printable reports separately and require an explicit print action, rather than automatically invoking a native print dialog from Compare.
 

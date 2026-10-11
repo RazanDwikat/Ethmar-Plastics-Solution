@@ -15,7 +15,11 @@ function setup(v:unknown):boolean{
 /** Validate stored structure, not setup correctness: incomplete drafts must remain recoverable. */
 export function validateSavedData(workspace:unknown,profiles:unknown):void{
   const fail=()=>{throw new Error('Saved work has an unreadable or unsupported format. Nothing was changed. Keep your source file; retry or continue without saving.');};
-  if(!list(profiles,p=>object(p)&&text(p.id)&&text(p.name)&&text(p.savedAt)&&list(p.headers,text)&&setup(p.setup)))fail();
+  if(!list(profiles,p=>object(p)&&text(p.id)&&text(p.name)&&text(p.savedAt)&&list(p.headers,text)&&setup(p.setup)
+    &&(p.sheetName===undefined||text(p.sheetName))
+    &&(p.headerLine===undefined||p.headerLine===null||(Number.isInteger(p.headerLine)&&(p.headerLine as number)>0))
+    &&(p.confirmed===undefined||typeof p.confirmed==='boolean')
+    &&(p.reading===undefined||(object(p.reading)&&(p.reading.encoding===undefined||text(p.reading.encoding))&&(p.reading.delimiter===undefined||text(p.reading.delimiter))&&(p.reading.decimal===undefined||p.reading.decimal==='.'||p.reading.decimal===',')))))fail();
   if(workspace===null)return;
   if(!object(workspace)){fail();return;}
   const w=workspace,f=w.file;
