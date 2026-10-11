@@ -24,10 +24,11 @@ export function normalizeRequirements(setup:Setup):Setup{
   return {...setup,measurements:setup.measurements.map(m=>({...m,required:isMeasurementRequired(m)}))};
 }
 export type Setup = {
+  attributeChecks?:Record<string,string>;
   preparation?:PreparationRecipe;
   version:1; shape:'event'|'run'; mapping:Record<Role,number|null>; synonyms:Synonyms; groupBy:'runId'|'orderId';
   events:EventDefinition[]; measurements:Measurement[]; unit:string; tolerance:number; checkBalance:boolean;
-  customFields:{id:string; column:number; label:string; compare:boolean}[];
+  customFields:{id:string; column:number; label:string; compare:boolean; useExplanations?:boolean; checkText?:string}[];
 };
 export type Profile = { id:string; name:string; savedAt:string; headers:string[]; setup:Setup; sheetName?:string; headerLine?:number|null; reading?:ParseOptions; confirmed?:boolean };
 export const defaultSynonyms:Synonyms = {

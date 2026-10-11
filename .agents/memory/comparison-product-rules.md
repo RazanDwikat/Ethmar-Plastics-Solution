@@ -130,3 +130,9 @@ Custom formula is a guided eighth template: arithmetic over per-run quantity/dur
 **Why:** The user extended the original template-only scope while requiring safe parsing, full evidence and overlap warnings.
 
 **How to apply:** Keep references tied to source identities through renaming; validate cycles and missing sources before saving reusable setups. Required checks follow transitive dependencies. Time inputs are hours; output units label the arithmetic without implicit conversions, so the builder explains explicit `* 60` or `* 100`. Round display only, never intermediate calculations.
+
+Possible explanations must be fixed local rules, without AI or network requests, and must never imply causation or personal blame. Custom attributes need explicit analyst opt-in; statements link recorded context to measurements rather than duplicating the detailed checks.
+
+**Why:** The user wants hypotheses to investigate, not inferred causes or judgments about people.
+
+**How to apply:** Preserve setup names, analyst check suggestions, original-row evidence, default collapsed presentation, and hypothesis labels in exports. The timing rule uses a disclosed 15-minute proximity window; relative measurement differences rank links, not causal importance.

@@ -2,6 +2,7 @@ import type {CalculatedRun,CalculationReport,CalculatedValue} from './calculatio
 import type {Setup} from './setup';
 import {compareCalculatedRuns} from './calculation-comparison';
 import {formatCalculated,timestamp} from './calculation-values';
+import {possibleExplanations,hypothesisTitle} from './hypotheses';
 
 export function searchRunText(text:string,query:string):boolean {
   const normalized=(s:string)=>s.normalize('NFKC').toLocaleLowerCase().replace(/[^\p{L}\p{N}]/gu,'');
@@ -62,6 +63,8 @@ function exportRows(report:CalculationReport,a:CalculatedRun,b:CalculatedRun):st
     const reason=value===null?(av.value===null?av.reason:bv?.value===null?bv.reason:'The source or compatible unit is unavailable.'):'';
     rows.push([av.label,formatCalculated(av),bv?formatCalculated(bv):'Not configured',formatCalculated({value,unit,state:'unavailable',decimals:av.decimals}),unit,reason,refs(av),bv?refs(bv):'']);
   }
+  rows.push([hypothesisTitle,'Fixed local rules; timing proximity means within 15 minutes. Not causal rankings.']);
+  for(const item of possibleExplanations(report,a,b))rows.push(['Hypothesis',item.rule,item.facts,item.hypothesis,`Check: ${item.check}`,...item.evidence.map(e=>`${e.run.id} · ${e.value.label}: ${refs(e.value)}; full run lines ${e.run.rows.map(r=>r.line).join(', ')}`)]);
   rows.push(['Comparability','State','Baseline','Compared','Explanation']);
   for(const c of compareCalculatedRuns(a,b,report.setup).checks)rows.push([c.label,c.state,c.baseline,c.compared,c.reason]);
   for(const r of [a,b]){
