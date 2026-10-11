@@ -30,6 +30,8 @@ test('demo roles persist only in a tab and manager Setup addresses redirect',asy
 
 test('sign out preserves saved setups, analyst bytes and in-tab manager uploads',async({page})=>{
  await page.goto('/');await page.getByTestId('signin-analyst').click();
+ await expect(page.getByTestId('nav-setup')).toBeVisible();
+ await expect(page.getByTestId('nav-compare')).toHaveCount(0);
  await upload(page,'upload-file',samples[0].csv);
  await page.getByRole('button',{name:/Continue to row type/}).click();
  await page.getByTestId('button-confirm-shape').click();

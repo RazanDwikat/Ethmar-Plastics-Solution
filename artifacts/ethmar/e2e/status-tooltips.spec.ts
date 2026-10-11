@@ -14,7 +14,7 @@ async function results(page:Page){
   request.onerror=()=>reject(request.error);
  })},profile);
  await page.reload();
- await page.getByTestId('nav-compare').click();
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.getByTestId('signin-manager').click();
  await page.getByTestId('manager-upload').setInputFiles({name:'issues.csv',mimeType:'text/csv',buffer:Buffer.from(samples[1].csv)});
  await page.getByTestId('continue-comparison').click();
  await expect(page.getByTestId('compare-manager')).toBeVisible();

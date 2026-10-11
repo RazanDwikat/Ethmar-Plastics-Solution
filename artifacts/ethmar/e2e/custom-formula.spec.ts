@@ -40,7 +40,7 @@ test('analyst builder validates, previews, persists and imports; manager sees cu
  await importer.setInputFiles({name:'setup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(profile))});
  await expect(page.getByTestId('import-setup-success')).toBeVisible();
  await expect.poll(async()=> (await localData(page)).profiles.length).toBe(2);
- await page.reload();await page.getByTestId('nav-compare').click();await upload(page,'manager-upload',samples[0].csv);
+ await page.reload();await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.getByTestId('signin-manager').click();await upload(page,'manager-upload',samples[0].csv);
  await page.getByTestId('continue-comparison').click();
  const result=page.locator('.metric-card').filter({has:page.getByRole('heading',{name:'Waste formula',exact:true})});
  await expect(result).toContainText('5.0%');await expect(result).toContainText('10.0%');

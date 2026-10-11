@@ -27,7 +27,8 @@ test('saved JSON, reload and manager replay retain the recipe but never stale co
   await expect(page.getByTestId('setup-saved')).toBeVisible();
   expect((await localData(page)).profiles[0]).toEqual(exported);
 
-  await page.getByTestId('nav-compare').click();
+  await page.getByRole('button',{name:'Sign out',exact:true}).click();
+  await page.getByTestId('signin-manager').click();
   await expect(page.getByTestId('manager-upload')).toBeVisible();
   await expect(page.getByTestId('compare-manager')).toHaveCount(0);
   // New values prove replay is on the manager file, not cached analyst results.
@@ -79,9 +80,12 @@ test('saved JSON, reload and manager replay retain the recipe but never stale co
   await expect(page.getByText('Clipboard unavailable. Select and copy the message in the text box.', { exact: true })).toBeVisible();
   await expect(differences).toHaveValue(message);
   await expect(page.getByText('Message copied.', { exact: true })).toHaveCount(0);
+  await page.getByRole('button',{name:'Sign out',exact:true}).click();
+  await page.getByTestId('signin-analyst').click();
   await page.reload();
   await expect(page.getByTestId('setup-saved')).toBeVisible();
-  await page.getByTestId('nav-compare').click();
+  await page.getByRole('button',{name:'Sign out',exact:true}).click();
+  await page.getByTestId('signin-manager').click();
   await expect(page.getByTestId('manager-setup')).toHaveValue(profile.id);
   await expect(page.getByTestId('manager-upload')).toBeVisible();
   await expect(page.getByTestId('compare-manager')).toHaveCount(0);

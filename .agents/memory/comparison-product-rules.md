@@ -5,7 +5,7 @@ description: User-confirmed scope and integrity constraints for the Ethmar compa
 
 Ethmar Plastics needs a read-only comparison tool over approved ERP exports, not an ERP replacement. No real accounts, live ERP connection, or write-back is in MVP scope. Save imports and reusable mappings in the same browser/device only.
 
-Demo sign-in is a role choice, not authentication or a privacy boundary between people using the same browser. Analyst can prepare setups and preview Manager; Manager cannot open Setup. Keep the role in tab session storage and make the lack of real security explicit. Signing out must not delete setups or imported data; deletion is a separate action.
+Demo sign-in is a role choice, not authentication or a privacy boundary between people using the same browser. Analyst can prepare setups and use the test-only Preview as manager link, but the Analyst Setup header must not offer Compare · manager; Manager cannot open Setup. Keep the role in tab session storage and make the lack of real security explicit. Signing out must not delete setups or imported data; deletion is a separate action.
 
 **Why:** The user requested a simple first-screen demo role selector while preserving all existing local-only features.
 

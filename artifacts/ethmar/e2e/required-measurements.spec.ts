@@ -12,7 +12,7 @@ async function seed(page:Page,required=true){
   const request=indexedDB.open('ethmar-private-workspace',1);request.onerror=()=>reject(request.error);
   request.onsuccess=()=>{const db=request.result,tx=db.transaction('data','readwrite');tx.objectStore('data').put([p],'profiles');tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>reject(tx.error)};
  }),profile);
- await page.reload();await page.getByTestId('nav-compare').click();
+ await page.reload();await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.getByTestId('signin-manager').click();
 }
 async function upload(page:Page,csv:string,id='manager-upload'){await page.getByTestId(id).setInputFiles({name:'requirements.csv',mimeType:'text/csv',buffer:Buffer.from(csv)});}
 test('required whole-file absence blocks with copied explanation; individual-run absence continues',async({page,context})=>{
