@@ -1,4 +1,5 @@
 import {roles,templates} from './setup';
+import {validatePreparationRecipe} from './preparation';
 const object=(v:unknown):v is Record<string,unknown>=>!!v&&typeof v==='object';
 const list=(v:unknown,test:(item:unknown)=>boolean):boolean=>Array.isArray(v)&&v.every(test);
 const text=(v:unknown):v is string=>typeof v==='string';
@@ -10,6 +11,7 @@ function setup(v:unknown):boolean{
     &&['runId','orderId'].includes(String(v.groupBy))&&text(v.unit)&&typeof v.tolerance==='number'&&typeof v.checkBalance==='boolean'
     &&list(v.events,e=>object(e)&&text(e.id)&&text(e.label)&&list(e.values,text)&&['quantity','timed'].includes(String(e.kind))&&['range','duration'].includes(String(e.timing))&&['hours','minutes','seconds'].includes(String(e.durationUnit))&&['column','startColumn','endColumn','durationColumn'].every(k=>column(e[k])))
     &&list(v.measurements,m=>object(m)&&text(m.id)&&text(m.label)&&templates.some(t=>t===m.template)&&text(m.a)&&text(m.b)&&typeof m.exampleA==='number'&&typeof m.exampleB==='number')
+    &&(v.preparation===undefined||validatePreparationRecipe(v.preparation))
     &&list(v.customFields,f=>object(f)&&text(f.id)&&text(f.label)&&typeof f.column==='number'&&column(f.column)&&typeof f.compare==='boolean');
 }
 /** Validate stored structure, not setup correctness: incomplete drafts must remain recoverable. */
@@ -28,7 +30,8 @@ export function validateSavedData(workspace:unknown,profiles:unknown):void{
   if(!(w.sheetIndex===null||(Number.isInteger(w.sheetIndex)&&(w.sheetIndex as number)>=0&&(w.sheetIndex as number)<f.sheets.length))
     ||!(w.header===undefined||w.header===null||Number.isInteger(w.header))
     ||!(w.shape===null||['event','run'].includes(String(w.shape)))
-    ||!['upload','sheets','check','shape','mapping','done','compare'].includes(String(w.screen))
+    ||!['upload','sheets','check','prepare','shape','mapping','done','compare'].includes(String(w.screen))
     ||!(w.shapeConfirmed===undefined||typeof w.shapeConfirmed==='boolean')
-    ||!(w.setup===null||setup(w.setup))||!(w.confirmed===undefined||typeof w.confirmed==='boolean')||!text(w.savedAt))fail();
+    ||!(w.setup===null||setup(w.setup))||!(w.confirmed===undefined||typeof w.confirmed==='boolean')||!text(w.savedAt)
+    ||!(w.preparation===undefined||w.preparation===null||validatePreparationRecipe(w.preparation)))fail();
 }

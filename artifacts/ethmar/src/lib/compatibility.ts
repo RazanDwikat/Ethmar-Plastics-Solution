@@ -3,19 +3,37 @@ import { roles, setupProblems, type Profile, type Setup } from './setup';
 import { quantity, timestamp, timestampZone } from './calculation-values';
 import { calculateFile, type CalculationReport, type EvidenceRow } from './calculation-engine';
 import { detectRowShape } from './row-shape';
+import { prepareFile } from './preparation';
 
 export type CompatibilityResult = {
+  preparedFile?:ImportedFile;
   state:'matches'|'notes'|'blocked'; differences:string[]; notes:string[];
   excluded:EvidenceRow[]; setup:Setup; headerLine:number|null; headers:string[]; unmapped:string[]; detectedShape:'event'|'run'|null;
 };
 
 /** Match original header names exactly. Synonyms belong only to analyst preparation. */
 export function checkCompatibility(file:ImportedFile,sheetIndex:number,profile:Profile):CompatibilityResult {
+  let preparedFile:ImportedFile|undefined,preparedHeader=profile.headerLine;
+  if(profile.setup.preparation){
+    try{
+      const result=prepareFile(file,sheetIndex,profile.setup.preparation,profile.headerLine);
+      preparedFile=result.file;file=result.file;preparedHeader=result.headerLine;
+    }catch(error){
+      return {state:'blocked',differences:[error instanceof Error?error.message:'Preparation could not be applied. Ask your analyst to review the setup.'],notes:[],excluded:[],setup:structuredClone(profile.setup),headerLine:null,headers:[],unmapped:[],detectedShape:null};
+    }
+  }
   const sheet=file.sheets[sheetIndex];
   if(!sheet)throw new Error('Choose a sheet before checking this file.');
-  const inspection=inspectSheet(sheet,file.decimal,profile.headerLine);
+  const inspection=inspectSheet(sheet,file.decimal,preparedHeader);
   const headers=inspection.headers,setup=structuredClone(profile.setup);
   const differences:string[]=[],notes:string[]=[],excluded:EvidenceRow[]=[];
+  if(file.prepared){
+    notes.push(`${file.prepared.recipe.steps.length} saved preparation steps applied to a copy. Original values are unchanged.`);
+    for(const step of file.prepared.recipe.steps){
+      const removed=file.prepared.excluded.filter(e=>e.stepId===step.id);
+      if(removed.length)notes.push(`${removed[0].reason} ${removed.length} rows excluded — lines ${removed.map(e=>e.row.line).join(', ')}.`);
+    }
+  }
   const required=new Set<number>();
   const remap=(index:number|null):number|null=>{
     if(index===null)return null;
@@ -79,10 +97,10 @@ export function checkCompatibility(file:ImportedFile,sheetIndex:number,profile:P
     }
     for(const [reason,lines] of groups)notes.push(`${reason} ${lines.length} ${lines.length===1?'row':'rows'} — lines ${lines.join(', ')}.`);
   }
-  return {state:differences.length?'blocked':notes.length?'notes':'matches',differences:[...new Set(differences)],notes,excluded,setup,headerLine:inspection.headerLine,headers,unmapped,detectedShape};
+  return {state:differences.length?'blocked':notes.length?'notes':'matches',differences:[...new Set(differences)],notes,excluded,setup,headerLine:inspection.headerLine,headers,unmapped,detectedShape,preparedFile};
 }
 
 export function calculateCompatible(file:ImportedFile,sheetIndex:number,check:CompatibilityResult):CalculationReport {
   if(check.state==='blocked')throw new Error('This file does not match the setup. Resolve the listed differences before comparing.');
-  return calculateFile(file,sheetIndex,check.setup,check.headerLine,check.excluded);
+  return calculateFile(check.preparedFile??file,sheetIndex,check.setup,check.headerLine,check.excluded);
 }

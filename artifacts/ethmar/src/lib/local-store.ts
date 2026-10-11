@@ -1,9 +1,12 @@
 import type { ImportedFile } from './inspection';
 import type { Profile, Setup } from './setup';
+import type { PreparationRecipe } from './preparation-types';
 import { validateSavedData } from './saved-data-validation';
 export type SavedWorkspace = {
   file:ImportedFile; sheetIndex:number|null; header:number|null|undefined; shape:'event'|'run'|null;
-  screen:'upload'|'sheets'|'check'|'shape'|'mapping'|'done'|'compare'; setup:Setup|null; confirmed?:boolean; shapeConfirmed?:boolean; savedAt:string;
+  screen:'upload'|'sheets'|'check'|'prepare'|'shape'|'mapping'|'done'|'compare'; setup:Setup|null; confirmed?:boolean; shapeConfirmed?:boolean; savedAt:string;
+  /** Draft preparation recipe, kept separately so it survives before a setup exists (including failing drafts). */
+  preparation?:PreparationRecipe|null;
 };
 export type LocalData = { workspace:SavedWorkspace|null; profiles:Profile[] };
 const DB='ethmar-private-workspace', STORE='data';

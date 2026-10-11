@@ -1,10 +1,11 @@
 import { unzipSync, strFromU8 } from 'fflate';
 import { XMLParser, XMLValidator } from 'fast-xml-parser';
+import type { CellTrace, PreparationRecipe, PreparationExclusion } from './preparation-types';
 
-export type Cell = { address: string; raw: string | number | boolean | null; display: string; formula?: string; date?: string };
+export type Cell = { address: string; raw: string | number | boolean | null; display: string; formula?: string; date?: string; trace?:CellTrace };
 export type SourceRow = { line: number; endLine?: number; cells: Cell[] };
 export type ParsedSheet = { name: string; rows: SourceRow[]; merges: string[] };
-export type ImportedFile = { name: string; kind: 'csv' | 'xlsx'; sheets: ParsedSheet[]; encoding: string; delimiter: string; decimal: '.' | ','; notes: string[]; original: ArrayBuffer };
+export type ImportedFile = { name: string; kind: 'csv' | 'xlsx'; sheets: ParsedSheet[]; encoding: string; delimiter: string; decimal: '.' | ','; notes: string[]; original: ArrayBuffer; prepared?:{recipe:PreparationRecipe; sheetIndex:number; headerLine:number|null; originalSheets:ParsedSheet[]; excluded:PreparationExclusion[]} };
 export type ParseOptions = { encoding?: string; delimiter?: string; decimal?: '.' | ',' };
 export type Inspection = { headers: string[]; headerLine: number | null; dataRows: number; columnCount: number; shape: 'event' | 'run'; columns: { index: number; name: string; type: string; examples: string[] }[]; issues: { code: string; message: string; lines: number[] }[]; runCandidates: number[] };
 const MAX_ROWS = 50000, MAX_COLUMNS = 300, MAX_BYTES = 20 * 1024 * 1024;

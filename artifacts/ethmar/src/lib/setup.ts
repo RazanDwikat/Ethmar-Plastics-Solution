@@ -1,4 +1,5 @@
 import { normalizeHeader, type Inspection, type ParseOptions } from './inspection';
+import type { PreparationRecipe } from './preparation-types';
 
 export const roles = [
   ['runId','Run ID'], ['orderId','Order ID'], ['eventId','Event ID'], ['eventType','Event type'],
@@ -15,6 +16,7 @@ export type EventDefinition = {
 export const templates = ['Ratio','Duration','Total','Difference','Count','Rate per hour','Average'] as const;
 export type Measurement = { id:string; label:string; template:typeof templates[number]; a:string; b:string; exampleA:number; exampleB:number };
 export type Setup = {
+  preparation?:PreparationRecipe;
   version:1; shape:'event'|'run'; mapping:Record<Role,number|null>; synonyms:Synonyms; groupBy:'runId'|'orderId';
   events:EventDefinition[]; measurements:Measurement[]; unit:string; tolerance:number; checkBalance:boolean;
   customFields:{id:string; column:number; label:string; compare:boolean}[];

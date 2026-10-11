@@ -1,0 +1,19 @@
+.eu .prep-intro{border-left:4px solid var(--accent);padding-left:16px}
+.eu .prep-steps{list-style:none;margin:0;padding:0;display:grid;gap:16px;counter-reset:prep}
+.eu .prep-step{border:1px solid #d6ded3;border-radius:12px;padding:18px;background:#fbfcf8;position:relative}
+.eu .prep-step.failed{border-color:#b4573f;background:#fbf2ee}
+.eu .prep-step-head{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.eu .prep-num{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:#20372d;color:#f3f1e7;font-size:14px;font-weight:700;flex:none}
+.eu .prep-title{display:flex;gap:12px;align-items:flex-start;flex:1;min-width:220px}
+.eu .prep-title small{display:block;color:var(--muted)}
+.eu .prep-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:14px 0}
+.eu .prep-preview{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.eu .prep-preview h4{margin:0 0 6px;font-size:14px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.eu .prep-preview table td,.eu .prep-preview table th{min-width:96px;font-size:14px;padding:6px 8px}
+.eu .prep-add{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;padding:16px;border:1px dashed #9fb3a5;border-radius:12px}
+.eu .prep-add label{flex:1 1 260px}
+.eu .prep-error{border-left:4px solid #b4573f;padding:10px 14px;background:#fbf2ee;border-radius:8px}
+.eu label.shape-card{display:flex;flex-direction:row;gap:12px;align-items:flex-start;cursor:pointer;text-align:left}
+.eu .shape-card input[type=radio]{flex:none;margin:4px 0 0;width:20px;height:20px}
+.eu .shape-card>span{flex:1;min-width:0}
+@media(max-width:767px){.eu .prep-preview{grid-template-columns:1fr}}

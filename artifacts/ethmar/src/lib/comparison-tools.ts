@@ -78,6 +78,8 @@ function exportRows(report:CalculationReport,a:CalculatedRun,b:CalculatedRun):st
     }
   }
   for(const issue of report.issues)rows.push(['File note',issue.level,issue.message,`Lines ${issue.lines.join(', ')}`]);
+  for(const step of report.source.prepared?.recipe.steps??[])rows.push(['Preparation step',step.id,JSON.stringify(step)]);
+  for(const entry of report.source.prepared?.excluded??[])rows.push(['Preparation exclusion',`${report.source.name} / ${report.source.sheets[report.sheetIndex].name} / line ${entry.row.line}`,entry.reason,JSON.stringify(entry.row.cells)]);
   rows.push(['Technical details',JSON.stringify({setup:report.setup,encoding:report.source.encoding,decimal:report.source.decimal,delimiter:report.source.delimiter})]);
   return rows;
 }

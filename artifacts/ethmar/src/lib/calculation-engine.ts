@@ -2,6 +2,7 @@ import { inspectSheet, type ImportedFile, type SourceRow } from './inspection';
 import { setupProblems, type Setup, type Measurement } from './setup';
 import { formatCalculated, numberText, quantity, timestamp, timestampZone } from './calculation-values';
 import type { CalculationReport, CalculatedRun, CalculatedValue, DataIssue, Evidence, EvidenceRow } from './calculation-types';
+import { prepareFile } from './preparation';
 export { formatCalculated } from './calculation-values';
 export type * from './calculation-types';
 
@@ -12,18 +13,26 @@ type Interval={start:number;end:number;row:SourceRow;definitionId:string;zone:'n
 type DefinitionResult={measure:CalculatedValue; validRows:SourceRow[]; intervals:Interval[]; count:number|null; countRows:SourceRow[]};
 
 export function calculateFile(file:ImportedFile,sheetIndex:number,setup:Setup,headerLine?:number|null,compatibilityExcluded:EvidenceRow[]=[]):CalculationReport {
+  if(setup.preparation&&!file.prepared){
+    const result=prepareFile(file,sheetIndex,setup.preparation,headerLine);
+    file=result.file;headerLine=result.headerLine;
+  }
   const sheet=file.sheets[sheetIndex];
   if(!sheet)throw new Error('Select a worksheet before calculating.');
   const inspection=inspectSheet(sheet,file.decimal,headerLine);
   const validation=setupProblems(setup,inspection.headers);
   if(validation.errors.length)throw new Error(`Review your setup first: ${validation.errors.join(' ')}`);
   const mapping={setup:structuredClone(setup),headers:[...inspection.headers],decimal:file.decimal,sheet:sheet.name,file:file.name};
-  const issues:DataIssue[]=[],excluded:EvidenceRow[]=[...compatibilityExcluded];
+  const issues:DataIssue[]=[],excluded:EvidenceRow[]=[...(file.prepared?.excluded??[]),...compatibilityExcluded];
   const compatibilityLines=new Set(compatibilityExcluded.map(e=>e.row.line));
   const add=(target:DataIssue[],code:string,level:DataIssue['level'],message:string,rows:SourceRow[],definitionIds:string[]=[])=>{
     target.push({code,level,message,lines:[...new Set(rows.map(r=>r.line))],definitionIds});
   };
   for(const entry of compatibilityExcluded)add(issues,'compatibility-exclusion','note',entry.reason,[entry.row]);
+  for(const step of file.prepared?.recipe.steps??[]){
+    const removed=file.prepared!.excluded.filter(e=>e.stepId===step.id);
+    if(removed.length)add(issues,'preparation-exclusion','note',`${removed[0].reason} ${removed.length} rows excluded; originals remain available.`,removed.map(e=>e.row));
+  }
   const structural=new Map<number,string>();
   for(const issue of inspection.issues){
     if(['repeated-header','multiple-headers','totals'].includes(issue.code))
