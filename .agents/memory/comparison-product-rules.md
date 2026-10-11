@@ -3,7 +3,19 @@ name: Comparison product rules
 description: User-confirmed scope and integrity constraints for the Ethmar comparison MVP.
 ---
 
-Ethmar Plastics needs a read-only comparison tool over approved ERP exports, not an ERP replacement. No login, live ERP connection, or write-back is in MVP scope. Save imports and reusable mappings in the same browser/device only.
+Ethmar Plastics needs a read-only comparison tool over approved ERP exports, not an ERP replacement. No real accounts, live ERP connection, or write-back is in MVP scope. Save imports and reusable mappings in the same browser/device only.
+
+Demo sign-in is a role choice, not authentication or a privacy boundary between people using the same browser. Analyst can prepare setups and preview Manager; Manager cannot open Setup. Keep the role in tab session storage and make the lack of real security explicit. Signing out must not delete setups or imported data; deletion is a separate action.
+
+**Why:** The user requested a simple first-screen demo role selector while preserving all existing local-only features.
+
+**How to apply:** Never add credentials or imply server-enforced access controls. Retain the demo disclaimer and separate sign-out from data deletion.
+
+New tabs opened by another tab can inherit sessionStorage, so storage alone is not sufficient for demo-role isolation.
+
+**Why:** Browser testing showed an opener-created tab incorrectly inherited the Manager choice.
+
+**How to apply:** Keep tab ownership separate from the copied storage, preserve refresh in the same browsing context, and test both independent tabs and opener-created tabs. This is demo behavior, not an authentication boundary.
 
 Analysts may explicitly prepare a derived table using guided header selection, row exclusions, fill-down, column combination, unit multiplication and simple two-column arithmetic. Original uploads remain immutable; each prepared value must trace back to its original cells and operations. Preparation is optional, saved with the setup and automatically replayed for manager files; managers cannot edit it.
 

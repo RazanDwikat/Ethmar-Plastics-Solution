@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { test, expect } from '@playwright/test';
+import { test, expect } from './analyst-fixture';
 import { compare, confirmSetup, csv, localData, producerRecipe, saved, upload } from './helpers';
 
 test('saved JSON, reload and manager replay retain the recipe but never stale comparisons', async ({ page, context }) => {

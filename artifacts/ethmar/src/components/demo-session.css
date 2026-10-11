@@ -1,0 +1,18 @@
+.demo-session-bar{position:sticky;top:0;z-index:60;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:10px 4%;background:#edf4f0;border-bottom:1px solid #c8d9d0;color:#234a42;font-size:14px}
+.demo-session-bar p{display:flex;align-items:center;gap:8px;margin:0;line-height:1.5}
+.demo-session-bar svg{flex-shrink:0}
+.demo-session-actions{display:flex;align-items:center;gap:16px;white-space:nowrap}
+.demo-session-actions button{display:flex;align-items:center;gap:7px;border:1px solid #8daaa0;border-radius:8px;padding:8px 12px;background:white;color:#234a42;cursor:pointer;font:inherit;min-height:44px}
+.demo-session-message{padding:12px 4%;margin:0;background:#fff7df;color:#604612;font-size:14px}
+body .eu .drawer-backdrop{top:var(--demo-bar-height,0px)}
+.eu main.demo-sign-in{max-width:920px;margin:0 auto;padding-top:60px}
+.demo-sign-in .brand{margin-bottom:44px}
+.demo-sign-in h1{font-size:clamp(28px,4vw,42px)}
+.demo-role-cards{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin:32px 0}
+.eu .demo-role-cards button{display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:14px;padding:30px;min-height:230px;border:1px solid #b4cbc0;background:white;border-radius:16px;white-space:normal;color:#234a42}
+.demo-role-cards button strong{font-size:26px}
+.demo-role-cards button span,.demo-role-cards button small,.demo-data-note{font-size:14px;line-height:1.6}
+.demo-role-cards button small{margin-top:auto;font-weight:600}
+.demo-role-cards button:hover{background:#edf4f0;border-color:#267668}
+.demo-role-cards button:focus-visible,.demo-session-actions button:focus-visible{outline:3px solid #1b7668;outline-offset:4px}
+@media(max-width:640px){.demo-session-bar{flex-wrap:wrap;gap:8px;padding:10px 16px}.demo-session-actions{width:100%;justify-content:space-between}.demo-role-cards{grid-template-columns:1fr;gap:16px}.eu main.demo-sign-in{padding-top:28px}.eu .demo-role-cards button{min-height:180px;padding:22px}.demo-sign-in .brand{margin-bottom:28px}}

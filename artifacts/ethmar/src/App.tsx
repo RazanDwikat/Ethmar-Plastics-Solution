@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ArrowRight, Check, Wand2, ChartNoAxesCombined, FileSpreadsheet, Info, RotateCcw, ShieldCheck, SlidersHorizontal, Upload } from 'lucide-react';
-import { Router, Route, Switch, Link } from 'wouter';
+import { Router, useLocation } from 'wouter';
+import { DemoSession, useDemoSession } from '@/components/demo-session';
 import { readFile, parseBytes, inspectSheet, type ImportedFile, type ParseOptions } from '@/lib/inspection';
 import { OriginalRows } from '@/components/original-rows';
 import { SetupEditor } from '@/components/setup-editor';
@@ -20,7 +21,12 @@ import { loadLocalData, saveWorkspace, saveProfiles, deleteAllLocalData, type Sa
 import '@/components/phase-e.css';
 
 function Workspace(){
- const [role,setRole]=useState<'analyst'|'manager'|'test'|'preview'>('analyst');
+ const session=useDemoSession();
+ const [path,navigate]=useLocation();
+ const [workspaceRole,setWorkspaceRole]=useState<'analyst'|'manager'|'test'|'preview'>(session.role==='manager'||path==='/compare'?'manager':'analyst');
+ const role=session.role==='manager'?'manager':workspaceRole;
+ function setRole(next:typeof workspaceRole){if(session.role==='manager'&&next!=='manager')return;setWorkspaceRole(next);if(next==='analyst')navigate('/setup');}
+ useEffect(()=>{setWorkspaceRole(session.role==='manager'||path==='/compare'?'manager':'analyst');},[session.role,path]);
  const [activeProfile,setActiveProfile]=useState<Profile|null>(null);
  const [confirmed,setConfirmed]=useState(false),[showDetails,setShowDetails]=useState(false);
  const [file,setFile]=useState<ImportedFile|null>(null),[sheetIndex,setSheetIndex]=useState<number|null>(null),[screen,setScreen]=useState<SavedWorkspace['screen']>('upload');
@@ -192,5 +198,5 @@ function Workspace(){
   </>}
   <footer className="footer row between"><div><p>Read-only originals. No automatic repairs or causal claims.</p><small>Saved only on this browser and device. Clearing browser data removes your work.</small></div><button className="danger" disabled={deleting} onClick={()=>void deleteData()} data-testid="delete-local-data">Delete my data</button></footer>{showDetails&&confirmed&&<CompareDrawer title={screen==='compare'?'Detailed calculation checks':'Data quality checks'} onClose={()=>setShowDetails(false)}>{calculating?<section className="panel calculation-pending" role="status" aria-busy="true"><h2>Checking original records…</h2><p>Results will appear when the checks finish.</p><div className="skeleton"/></section>:screen==='compare'?<CalculationChecks report={currentCalculation?.report??null} error={currentCalculation?.error??''} onRun={runChecks} onEdit={editSetup}/>:<QualityChecks report={currentCalculation?.report??null} error={currentCalculation?.error??''} onRetry={runChecks} onEdit={editSetup}/>}</CompareDrawer>}</main></div>;
 }
-function App(){return <Router base={import.meta.env.BASE_URL.replace(/\/$/,'')}><Switch><Route path="/" component={Workspace}/><Route><div className="eu"><main><section className="panel stack"><h1>Page not found</h1><p>Return to Setup to inspect a production file.</p><Link href="/">Back to Setup</Link></section></main></div></Route></Switch></Router>}
+function App(){return <Router base={import.meta.env.BASE_URL.replace(/\/$/,'')}><DemoSession><Workspace/></DemoSession></Router>}
 export default App;

@@ -1,4 +1,4 @@
-import {test,expect} from '@playwright/test';
+import {test,expect} from './analyst-fixture';
 import {readFile} from 'node:fs/promises';
 import {upload,localData} from './helpers';
 import {samples} from '../src/lib/samples';

@@ -1,4 +1,4 @@
-import {test,expect,type Page} from '@playwright/test';
+import {test,expect,type Page} from './analyst-fixture';
 import {parseBytes,inspectSheet} from '../src/lib/inspection';
 import {defaultSetup} from '../src/lib/setup';
 import {samples} from '../src/lib/samples';

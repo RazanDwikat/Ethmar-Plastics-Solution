@@ -1,0 +1,50 @@
+import {test,expect} from '@playwright/test';
+import {upload,localData,saved} from './helpers';
+import {samples} from '../src/lib/samples';
+
+test('demo roles persist only in a tab and manager Setup addresses redirect',async({page,context})=>{
+ await page.goto('/');
+ await expect(page.getByRole('heading',{name:'How will you use Ethmar?'})).toBeVisible();
+ await page.getByTestId('signin-manager').focus();await page.keyboard.press('Enter');
+ await expect(page.getByTestId('current-role')).toHaveText('Manager');
+ await expect(page.getByTestId('nav-setup')).toHaveCount(0);
+ await page.reload();await expect(page.getByTestId('current-role')).toHaveText('Manager');
+ const other=await context.newPage();await other.goto('/');
+ await expect(other.getByTestId('signin-analyst')).toBeVisible();await other.close();
+ const popupEvent=page.waitForEvent('popup');
+ await page.evaluate(()=>window.open('/','_blank'));
+ const popup=await popupEvent;
+ await expect(popup.getByTestId('signin-analyst')).toBeVisible();
+ await popup.getByTestId('signin-analyst').click();await popup.reload();
+ await expect(popup.getByTestId('current-role')).toHaveText('Analyst');
+ await popup.close();
+ await expect(page.getByTestId('current-role')).toHaveText('Manager');
+ await page.goto('/setup');
+ await expect(page).toHaveURL(/\/compare$/);
+ await expect(page.getByText('That area is for analysts',{exact:true})).toBeVisible();
+ await expect(page.getByTestId('upload-file')).toHaveCount(0);
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ await expect(page.getByTestId('signin-manager')).toBeVisible();
+ await page.reload();await expect(page.getByTestId('signin-manager')).toBeVisible();
+});
+
+test('sign out preserves saved setups, analyst bytes and in-tab manager uploads',async({page})=>{
+ await page.goto('/');await page.getByTestId('signin-analyst').click();
+ await upload(page,'upload-file',samples[0].csv);
+ await page.getByRole('button',{name:/Continue to row type/}).click();
+ await page.getByTestId('button-confirm-shape').click();
+ page.once('dialog',dialog=>dialog.accept('Role demo setup'));
+ await page.getByTestId('confirm-setup').click();
+ await expect(page.getByTestId('setup-saved')).toBeVisible();await saved(page);
+ await expect(page.getByTestId('preview-as-manager')).toBeVisible();
+ const before=await localData(page);
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ expect(await localData(page)).toEqual(before);
+ await page.getByTestId('signin-manager').click();
+ await upload(page,'manager-upload',samples[0].csv);
+ await expect(page.getByTestId('continue-comparison')).toBeEnabled();
+ await page.getByRole('button',{name:'Sign out',exact:true}).click();
+ await page.getByTestId('signin-manager').click();
+ await expect(page.getByTestId('continue-comparison')).toBeEnabled();
+ expect(await localData(page)).toEqual(before);
+});
