@@ -29,6 +29,12 @@ For one-row-per-run exports, repeated summary rows must not be summed as separat
 
 The clean demo must show E-01/E-02 scrap rates of 5%/10%, a 5-percentage-point difference, changeover of 4h/6h with a 2h difference, and E-02 unplanned downtime of 45min separately. Both runs have line L1; product stays unmapped.
 
+The Upload page should no longer offer built-in sample files. Retain demo datasets for regression coverage rather than reintroducing their choices on the page.
+
+**Why:** After finishing the MVP, the user requested removing sample files from the Upload page.
+
+**How to apply:** Keep the user's own CSV/Excel upload available and do not clear existing browser files or profiles as part of this UI change.
+
 **Why:** These are the user's explicit acceptance case and missing-attribute demonstration.
 
 **How to apply:** Group runs by the mapped run ID, or order ID when chosen during mapping if no run column is mapped. Include a second demo with one duplicate and one missing row.
