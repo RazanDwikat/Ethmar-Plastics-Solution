@@ -36,7 +36,9 @@ export async function localData(page: Page): Promise<LocalData> {
 }
 
 export async function saved(page: Page) {
-  await expect(page.getByText('Saved in this browser.', { exact: true })).toBeVisible();
+  if(await page.getByTestId('setup-saved').isVisible()){
+    await expect.poll(async()=>Boolean((await localData(page)).workspace?.confirmed)).toBe(true);
+  }else await expect(page.getByText('Saved in this browser.', { exact: true })).toBeVisible();
 }
 
 export async function addStep(page: Page, kind: string) {

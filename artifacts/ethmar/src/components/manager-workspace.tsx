@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useDemoSession } from './demo-session';
 import { ChartNoAxesCombined, Check, Info, ShieldCheck, SlidersHorizontal, TriangleAlert, Upload } from 'lucide-react';
 import { readFile, parseBytes, type ImportedFile } from '@/lib/inspection';
-import { setupProblems, roles, type Profile } from '@/lib/setup';
+import { roles, type Profile } from '@/lib/setup';
+import { setupStorageNote, usableProfile } from '@/lib/saved-setups';
+import { SavedSetupCards } from './saved-setups';
 import { checkCompatibility, calculateCompatible } from '@/lib/compatibility';
 import { loadManagerSetupId, saveManagerSetupId } from '@/lib/local-store';
 import { samples } from '@/lib/samples';
@@ -17,7 +19,7 @@ import { ExplanationTooltip } from './explanation-tooltip';
 type Props={profiles:Profile[];onAnalyst:()=>void;onManager:()=>void;mode?:'manager'|'test'|'preview';initialFile?:ImportedFile;initialProfile?:Profile};
 export function ManagerWorkspace({profiles,onAnalyst,onManager,mode='manager',initialFile,initialProfile}:Props){
  const session=useDemoSession();
- const available=useMemo(()=>profiles.filter(p=>p.confirmed!==false&&!setupProblems(p.setup,p.headers).errors.length),[profiles]);
+ const available=useMemo(()=>profiles.filter(usableProfile),[profiles]);
  const [selected,setSelected]=useState(initialProfile?.id??available[0]?.id??'');
  const profile=initialProfile??available.find(p=>p.id===selected);
  const [file,setFile]=useState<ImportedFile|null>(initialFile??null),[sheetIndex,setSheetIndex]=useState<number|null>(initialFile&&initialProfile?.sheetName?(()=>{const i=initialFile.sheets.findIndex(s=>s.name===initialProfile.sheetName);return i<0?null:i})():initialFile?.sheets.length===1?0:null);
@@ -52,7 +54,8 @@ export function ManagerWorkspace({profiles,onAnalyst,onManager,mode='manager',in
  <div className="heading"><div className="eyebrow">{mode==='test'?'Analyst · test only':mode==='preview'?'Analyst · manager preview · test only':'Manager workspace'}</div><h1>{mode==='test'?'Test the setup. Keep it unchanged.':'Two runs. A clearer picture.'}</h1><p>{mode==='manager'?'Choose a saved setup, then upload a fresh production file.':'This test does not change your saved setup or analyst file.'}</p></div>
  <div className="scope"><ShieldCheck/><span>Files stay in this browser tab. Manager uploads are never saved to the analyst workspace. Saved setups are read-only here.</span></div>
  {mode!=='manager'&&<button onClick={onAnalyst}>Back to saved setup</button>}
- {!profile&&!available.length?<section className="panel empty"><h2>No setup yet. Ask your analyst to prepare one.</h2></section>:<>
+  {!file&&!initialProfile&&<section aria-label="Saved setups"><h2>Saved setups</h2><p>{setupStorageNote}</p><SavedSetupCards profiles={profiles} selected={selected} disabled={busy} onSelect={p=>{reset();setSelected(p.id);void saveManagerSetupId(p.id).catch(()=>setStatus('Could not save the setup preference.'))}}/></section>}
+  {!profile&&!available.length?<section className="panel empty"><h2>{profiles.length?'No usable setup yet. Ask your analyst to prepare or review one.':'No setup yet. Ask your analyst to prepare one.'}</h2></section>:<>
  <section className="panel stack"><div className="row between"><label>Saved setup<select disabled={!!initialProfile||busy} value={profile?.id??''} data-testid="manager-setup" onChange={e=>{reset();setSelected(e.target.value);void saveManagerSetupId(e.target.value).catch(()=>setStatus('Could not save the setup preference.'))}}>{(initialProfile?[initialProfile]:available).map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></label><button onClick={reset} data-testid="manager-another-file"><Upload/>{mode==='test'?'Choose another test file':'Upload a different file'}</button></div>{file&&<p className="file-name" data-testid="manager-file-context">{file.name} · Setup: {profile?.name} · {sheetIndex!==null?file.sheets[sheetIndex]?.name:'Choose a sheet'}</p>}</section>
   {status&&<p className="file-note" role="status">{status}</p>}
   {(!report||mode==='test')&&check?.preparedFile&&sheetIndex!==null&&<PreparationAudit file={check.preparedFile} sheetIndex={sheetIndex}/>}

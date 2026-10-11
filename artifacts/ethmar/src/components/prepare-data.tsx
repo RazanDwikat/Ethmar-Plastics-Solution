@@ -28,12 +28,12 @@ function newStep(kind:Kind,headerLine:number|null):PreparationStep{
 function Rows({headers,rows,label,testId}:{headers:string[];rows:SourceRow[];label:string;testId:string}){
  return <div data-testid={testId}><h4>{label}</h4>{rows.length?<div className="scroll" tabIndex={0} aria-label={label}><table><thead><tr><th>Line</th>{headers.map((h,i)=><th key={i} dir="auto">{h||`Column ${i+1}`}</th>)}</tr></thead><tbody>{rows.map((r,ri)=><tr key={ri}><td>{r.line}{r.endLine&&r.endLine!==r.line?`–${r.endLine}`:''}</td>{headers.map((_,i)=><td key={i} dir="auto" className="raw-value">{r.cells[i]?.display??''}</td>)}</tr>)}</tbody></table></div>:<p><small>No rows to show.</small></p>}</div>;
 }
-type Props={file:ImportedFile;sheetIndex:number;header:number|null|undefined;rawHeaders:string[];rawHeaderLine:number|null;lineOptions:number[];recipe:PreparationRecipe|null;result:PreparationResult|null;error:string;onChange:(r:PreparationRecipe|null)=>void;onDone:()=>void;onBack:()=>void};
-export function PrepareData({file,sheetIndex,header,rawHeaders,rawHeaderLine,lineOptions,recipe,result,error,onChange,onDone,onBack}:Props){
+type Props={schemaOnly?:boolean;file:ImportedFile|null;sheetIndex:number;header:number|null|undefined;rawHeaders:string[];rawHeaderLine:number|null;lineOptions:number[];recipe:PreparationRecipe|null;result:PreparationResult|null;error:string;onChange:(r:PreparationRecipe|null)=>void;onDone:()=>void;onBack:()=>void};
+export function PrepareData({schemaOnly=false,file,sheetIndex,header,rawHeaders,rawHeaderLine,lineOptions,recipe,result,error,onChange,onDone,onBack}:Props){
  const steps=recipe?.steps??[];
  const [addKind,setAddKind]=useState<Kind>('header');
  const diag=useMemo(()=>{
-  if(!error)return null;
+  if(!error||!file||schemaOnly)return null;
   let last:PreparationResult|null=null;
   for(let i=0;i<steps.length;i++){
    try{last=prepareFile(file,sheetIndex,{version:1,steps:steps.slice(0,i+1)},header);}
@@ -50,10 +50,10 @@ export function PrepareData({file,sheetIndex,header,rawHeaders,rawHeaderLine,lin
   for(let j=i-1;j>=0;j--){const prev=known?.previews.find(p=>p.id===steps[j].id);if(prev)return prev.headersAfter;}
   return rawHeaders;
  };
- const colSelect=(i:number,value:string,onPick:(v:string)=>void,label:string,key:string)=>{const hs=headersFor(i);return <label>{label}<select value={value} onChange={e=>onPick(e.target.value)} data-testid={`select-step-${key}-${i}`}><option value="">Choose a column</option>{hs.map((h,k)=>h?<option key={k} value={h}>{h}</option>:null)}{value&&!hs.includes(value)&&<option value={value}>{value} (not found)</option>}</select></label>;};
+ const colSelect=(i:number,value:string,onPick:(v:string)=>void,label:string,key:string)=>{const hs=headersFor(i);return <label>{label}{schemaOnly?<input value={value} onChange={e=>onPick(e.target.value)} data-testid={`input-step-${key}-${i}`} placeholder="Exact source column header"/>:<select value={value} onChange={e=>onPick(e.target.value)} data-testid={`select-step-${key}-${i}`}><option value="">Choose a column</option>{hs.map((h,k)=>h?<option key={k} value={h}>{h}</option>:null)}{value&&!hs.includes(value)&&<option value={value}>{value} (not found)</option>}</select>}</label>;};
  const settings=(s:PreparationStep,i:number)=>{
   switch(s.kind){
-   case 'header':return <label>Header row<select value={s.line} onChange={e=>patch(i,{line:Number(e.target.value)})} data-testid={`select-step-line-${i}`}>{lineOptions.map(l=><option key={l} value={l}>Line {l}</option>)}</select><small>Rows above this line are ignored and listed as excluded.</small></label>;
+   case 'header':return <label>Header row{schemaOnly?<input type="number" min="1" value={s.line} onChange={e=>patch(i,{line:Number(e.target.value)})}/>:<select value={s.line} onChange={e=>patch(i,{line:Number(e.target.value)})} data-testid={`select-step-line-${i}`}>{lineOptions.map(l=><option key={l} value={l}>Line {l}</option>)}</select>}<small>Rows above this line are ignored and listed as excluded.</small></label>;
    case 'exclude':return <>{colSelect(i,s.column,v=>patch(i,{column:v}),'Column','column')}<label>Leave out rows where the value<select value={s.condition} onChange={e=>patch(i,{condition:e.target.value as 'equals'})} data-testid={`select-step-condition-${i}`}><option value="equals">equals</option><option value="contains">contains</option><option value="empty">is empty</option></select></label>{s.condition!=='empty'&&<label>Value<input value={s.value} onChange={e=>patch(i,{value:e.target.value})} placeholder="For example, Total" data-testid={`input-step-value-${i}`}/></label>}</>;
    case 'fill':return colSelect(i,s.column,v=>patch(i,{column:v}),'Column to fill downward','column');
    case 'combine':return <>{colSelect(i,s.a,v=>patch(i,{a:v}),'First column','a')}{colSelect(i,s.b,v=>patch(i,{b:v}),'Second column','b')}<label>New column name<input value={s.name} onChange={e=>patch(i,{name:e.target.value})} placeholder="For example, Start" data-testid={`input-step-name-${i}`}/></label><label>Result<select value={s.format} onChange={e=>patch(i,{format:e.target.value as 'text'})} data-testid={`select-step-format-${i}`}><option value="text">Join as text</option><option value="iso-date-time">Date plus time</option></select></label>{s.format==='text'&&<label>Separator<input value={s.separator} onChange={e=>patch(i,{separator:e.target.value})} data-testid={`input-step-separator-${i}`}/></label>}</>;
@@ -65,8 +65,8 @@ export function PrepareData({file,sheetIndex,header,rawHeaders,rawHeaderLine,lin
  return <section className="panel stack" data-testid="panel-prepare">
   <div className="eyebrow">Optional · Prepare your data</div>
   <h2>Clean or rearrange your file</h2>
-  <p className="file-name">{file.name} · {file.sheets[sheetIndex]?.name}</p>
-  <div className="prep-intro"><p>Add steps in the order they should happen. Each step shows the first five rows before and after. Your original file is never changed; the same steps run again on every future upload that uses this setup.</p></div>
+  <p className="file-name">{file?`${file.name} · ${file.sheets[sheetIndex]?.name}`:'Saved instructions · no file loaded'}</p>
+  <div className="prep-intro"><p>{schemaOnly?'Edit instructions in order. Previews and row checks require a real file and are not run here.':'Add steps in the order they should happen. Each step shows the first five rows before and after. Your original file is never changed; the same steps run again on every future upload that uses this setup.'}</p></div>
   {steps.length===0?<div className="empty" data-testid="empty-prepare"><strong>No steps yet</strong><p>Clean files can skip this. Add a step below if your file has titles above the header, repeated headers, totals, merged cells or values in separate columns.</p></div>:
   <ol className="prep-steps">{steps.map((s,i)=>{const pv=known?.previews.find(p=>p.id===s.id);const failed=failedAt===i;const after=failedAt>=0&&i>failedAt;return <li key={s.id} className={`prep-step${failed?' failed':''}`} data-testid={`card-step-${i}`}>
    <div className="prep-step-head"><div className="prep-title"><span className="prep-num">{i+1}</span><div><strong data-testid={`text-step-name-${i}`}>{preparationStepName(s)}</strong><small>{kinds.find(k=>k[0]===s.kind)?.[1]}</small></div></div>
@@ -80,6 +80,6 @@ export function PrepareData({file,sheetIndex,header,rawHeaders,rawHeaderLine,lin
   <div className="prep-add"><label>Add a step<select value={addKind} onChange={e=>setAddKind(e.target.value as Kind)} data-testid="select-add-step">{kinds.map(([k,l])=><option key={k} value={k}>{l}</option>)}</select></label><button onClick={()=>set([...steps,newStep(addKind,rawHeaderLine)])} data-testid="button-add-step"><Plus/>Add step</button></div>
   {error&&failedAt<0&&<div className="prep-error" role="alert" data-testid="error-prepare">{error}</div>}
   {result&&!error&&<div className="file-ok" data-testid="text-prepare-ok"><Check/><span>{steps.length} {steps.length===1?'step':'steps'} applied. {result.headers.length} columns, {result.excluded.length.toLocaleString()} rows left out with reasons.</span></div>}
-  <div className="row between"><button onClick={onBack} data-testid="button-prepare-back"><ArrowLeft/>Back</button><div className="row">{steps.length>0&&<button onClick={()=>{if(confirm('Remove all preparation steps and use the file as it is?'))onChange(null)}} data-testid="button-prepare-clear">Remove all steps</button>}<button className="primary" disabled={!!error} onClick={onDone} data-testid="button-prepare-done">{steps.length?'Use prepared table':'Continue without preparing'}<ArrowRight/></button></div></div>
+  {!schemaOnly&&<div className="row between"><button onClick={onBack} data-testid="button-prepare-back"><ArrowLeft/>Back</button><div className="row">{steps.length>0&&<button onClick={()=>{if(confirm('Remove all preparation steps and use the file as it is?'))onChange(null)}} data-testid="button-prepare-clear">Remove all steps</button>}<button className="primary" disabled={!!error} onClick={onDone} data-testid="button-prepare-done">{steps.length?'Use prepared table':'Continue without preparing'}<ArrowRight/></button></div></div>}
  </section>;
 }

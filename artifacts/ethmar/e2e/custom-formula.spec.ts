@@ -34,7 +34,7 @@ test('analyst builder validates, previews, persists and imports; manager sees cu
  await page.getByRole('button',{name:'Save / Export setup'}).click();
  const profile=JSON.parse(await readFile(await (await download).path(),'utf8'));
  expect(profile.setup.measurements.at(-1).formula).toContain('Scrap total');
- await page.getByRole('button',{name:'Edit setup',exact:true}).click();
+ await page.getByTestId('nav-saved-setups').click();
  const importer=page.getByTestId('import-setup-json');
  await page.locator('details').filter({has:importer}).evaluateAll(els=>els.forEach(e=>(e as HTMLDetailsElement).open=true));
  await importer.setInputFiles({name:'setup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(profile))});
@@ -52,6 +52,7 @@ test('analyst builder validates, previews, persists and imports; manager sees cu
 test('invalid imported formula cannot become a saved setup',async({page})=>{
  await page.goto('/');await upload(page,'upload-file',samples[0].csv);
  await page.getByRole('button',{name:/Continue to row type/}).click();await page.getByTestId('button-confirm-shape').click();
+ await page.getByTestId('nav-saved-setups').click();
  const importer=page.getByTestId('import-setup-json');
  await page.locator('details').filter({has:importer}).evaluateAll(els=>els.forEach(e=>(e as HTMLDetailsElement).open=true));
  await importer.setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{"setup":{"formula":"alert(1)"}}')});

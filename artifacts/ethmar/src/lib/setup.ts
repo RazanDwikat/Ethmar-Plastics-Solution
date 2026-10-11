@@ -30,7 +30,7 @@ export type Setup = {
   events:EventDefinition[]; measurements:Measurement[]; unit:string; tolerance:number; checkBalance:boolean;
   customFields:{id:string; column:number; label:string; compare:boolean; useExplanations?:boolean; checkText?:string}[];
 };
-export type Profile = { id:string; name:string; savedAt:string; headers:string[]; setup:Setup; sheetName?:string; headerLine?:number|null; reading?:ParseOptions; confirmed?:boolean };
+export type Profile = { id:string; name:string; savedAt:string; headers:string[]; setup:Setup; sourceFileName?:string; sheetName?:string; headerLine?:number|null; reading?:ParseOptions; confirmed?:boolean };
 export const defaultSynonyms:Synonyms = {
   runId:['run_id','run','batch','batch_id','رقم الدفعة','رقم التشغيل'],
   orderId:['order_id','order','order number','رقم الطلب'], eventId:['event_id','event id','معرف الحدث'],

@@ -8,6 +8,9 @@ export function importSetupJson(text:string):Profile{
  const errors=setupProblems(profile.setup,profile.headers).errors;
  if(errors.length)throw new Error(`This setup needs correction: ${errors.join(' ')}`);
  profile.setup=normalizeRequirements(profile.setup);
- profile.setup.measurements=profile.setup.measurements.map(m=>m.template==='Custom formula'?{...m,formulaBindings:bindFormula(m.formula??'',profile.setup,m)}:m);
+  profile.setup.measurements=profile.setup.measurements.map(m=>{
+   if(m.template!=='Custom formula')return m;
+   return {...m,formulaBindings:bindFormula(m.formula??'',profile.setup,m)};
+  });
  return profile;
 }

@@ -1,0 +1,6 @@
+.eu .saved-card{padding:24px;border:1px solid var(--line);border-radius:12px;background:#fafbf7;margin:16px 0}
+.eu .saved-card.selected{border-color:var(--accent);box-shadow:inset 4px 0 var(--accent)}
+.eu .saved-card h3{overflow-wrap:anywhere}.eu .saved-counts{display:flex;gap:24px;flex-wrap:wrap;padding:16px 0;margin:14px 0;border-block:1px solid var(--line);font-size:14px}
+.eu .saved-counts strong{font-family:Manrope,sans-serif;font-size:20px;margin-right:6px}
+.eu .saved-summary dl{display:grid;grid-template-columns:minmax(130px,1fr) 2fr;gap:10px 24px;margin:16px 0}.eu .saved-summary dt{color:var(--muted)}.eu .saved-summary dd{margin:0;overflow-wrap:anywhere;white-space:pre-wrap}.eu .saved-summary h3{margin:24px 0 12px}.eu .saved-summary article{border-top:1px solid var(--line);padding:14px 0}.eu .saved-actions{gap:8px}.eu .saved-actions button{padding:8px 12px}
+@media(max-width:767px){.eu .saved-summary dl{grid-template-columns:1fr;gap:4px}.eu .saved-summary dd{margin-bottom:12px}.eu .saved-card{padding:18px}.eu .saved-counts{gap:12px 20px}}

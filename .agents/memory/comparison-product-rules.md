@@ -11,6 +11,12 @@ Demo sign-in is a role choice, not authentication or a privacy boundary between 
 
 **How to apply:** Never add credentials or imply server-enforced access controls. Retain the demo disclaimer and separate sign-out from data deletion.
 
+Editing a saved setup must remain separate from the analyst's currently open production file. If the original file is unavailable, edit saved settings and column names only; do not invent production rows or silently apply the setup to an unrelated file.
+
+**Why:** Reusable setups can outlive their source upload, and opening one must not overwrite another setup in progress.
+
+**How to apply:** Keep file provenance when known, explicitly say “Not recorded” for older setups, and require a real file to validate data-level preparation and calculations.
+
 New tabs opened by another tab can inherit sessionStorage, so storage alone is not sufficient for demo-role isolation.
 
 **Why:** Browser testing showed an opener-created tab incorrectly inherited the Manager choice.
