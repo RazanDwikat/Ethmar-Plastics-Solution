@@ -5,6 +5,12 @@ description: User-confirmed scope and integrity constraints for the Ethmar compa
 
 Ethmar Plastics needs a read-only comparison tool over approved ERP exports, not an ERP replacement. No login, live ERP connection, or write-back is in MVP scope. Save imports and reusable mappings in the same browser/device only.
 
+Analysts may explicitly prepare a derived table using guided header selection, row exclusions, fill-down, column combination, unit multiplication and simple two-column arithmetic. Original uploads remain immutable; each prepared value must trace back to its original cells and operations. Preparation is optional, saved with the setup and automatically replayed for manager files; managers cannot edit it.
+
+**Why:** The user requested guided preparation without code while keeping original evidence and analyst/manager separation.
+
+**How to apply:** Mapping and downstream calculations use the prepared table; row-shape confirmation follows preparation. Exclusions must remain visible with original lines and reasons. An inapplicable saved step must stop manager compatibility rather than silently repairing or skipping it.
+
 **Why:** The user chose the simplest options that meet a checkable, generic factory-comparison brief.
 
 **How to apply:** Preserve imported values and source line references. Evidence must include the formula with actual values, interpreting mapping, included rows, and excluded rows with reasons. Generic ratio, duration, and total templates are allowed; a free-form formula language is not.

@@ -1,0 +1,39 @@
+Add an optional "Prepare your data" step to Setup. It lets the analyst clean or
+rearrange the file into a clean table using guided steps, not code. It can be opened
+from two places, both leading to the same screen:
+1) On the File check, when problems are found (header not on the first row, repeated
+   headers, total rows, merged cells, mixed formats), show a button "Clean or
+   rearrange your file".
+2) On the screen "What does each row in your file represent?", add a THIRD card:
+   "My file is arranged differently, I want to rearrange it first". Selecting it
+   opens the Prepare step.
+After the analyst finishes preparing, return to "What does each row in your file
+represent?" with the prepared table shown as a preview, so the analyst chooses
+"One row per event" or "One row per run" for the prepared table. The first two
+cards stay unchanged. The step is optional: analysts with a clean file skip it.
+
+Prepare steps (each added with "Add a step", with a plain-language name, simple
+settings, a before/after preview of the first 5 rows, and the ability to reorder or
+delete steps):
+1) Choose the header row and ignore rows above it
+2) Exclude rows by a condition (equals / is empty / contains), including repeated
+   header rows and total rows
+3) Fill empty cells downward (for merged cells)
+4) Combine columns (e.g. date + time into one timestamp)
+5) Convert units (multiply by a factor, e.g. tons to kg)
+6) Calculated column: A - B, A + B, A x B or A / B, with a name
+
+Rules: never modify the original file; work on a copy. Never hide anything: every
+step that removes rows shows how many and which (line numbers) in the data checks
+and the source view. Every prepared row keeps its source (file, sheet, line, cells)
+so the evidence drawer shows the original values, and calculated columns show their
+formula with actual values. Save the steps as part of the setup (and in Export
+setup). Apply them automatically to the manager's uploaded file, and include them in
+the compatibility check (a step that cannot apply, e.g. a missing column, makes the
+result "Does not match" with a plain explanation). Column mapping and everything
+after it work on the prepared table. No free-form code or formulas.
+
+Also fix two details on the "What does each row in your file represent?" screen:
+align each radio button to the left of its card's text instead of centered above it,
+and show "Confirmed. Your column choices will be kept." only after the analyst
+presses "Confirm and continue to columns". Show the result and stop.
