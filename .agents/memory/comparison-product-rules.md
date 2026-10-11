@@ -79,7 +79,9 @@ Setup is the analyst's preparation workflow, not a results dashboard. Confirmed 
 
 **Why:** The user explicitly requested complete Analyst/Manager experience separation after objecting to comparison results under Setup.
 
-**How to apply:** Preserve this separation and every existing feature. Manager compatibility must match exact original headers independent of order, retain extra columns, exclude and explain unknown activities and unparseable rows, and stop on missing columns or a different row shape. Never infer shape from a custom header alone; require an explicit row-shape choice. Excel uses the saved sheet name or asks. Production data remains browser-only; use no accounts or server-side role enforcement.
+**How to apply:** Preserve this separation and every existing feature. Manager compatibility must match exact original headers independent of order, retain extra columns, exclude and explain unknown activities and unparseable rows, and stop on missing columns or a different row shape. Row shape is chosen only by the analyst in Setup; managers use the saved choice automatically and must not be asked to determine it. Never infer shape from a custom header alone. Excel uses the saved sheet name or asks. Production data remains browser-only; use no accounts or server-side role enforcement.
+
+**Why (row-shape ownership):** The user explicitly corrected the manager row-shape prompt: this decision belongs to analyst Setup, not managers.
 
 Open printable reports separately and require an explicit print action, rather than automatically invoking a native print dialog from Compare.
 
